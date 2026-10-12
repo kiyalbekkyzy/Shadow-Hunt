@@ -57,6 +57,7 @@ if($('pl')){$('pl').innerHTML=all.map((p,i)=>`<span class="pl"><span class="dot"
 async function connect(code){if(window.ShadowNet)return ShadowNet.connect(code);const rm=await claude.use('room');return rm?await rm.join('sh-'+code):null}
 async function online(solo){const n=($('nm').value||'Игрок').slice(0,12),code=($('cd').value||'room1').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20)||'room1';
 S.me={n,x:0,y:0,f:0,st:'r',m:0,tm:0,sd:0,ph:'l',hidden:0};R=null;
+if(!solo&&window.ShadowNet)OV.innerHTML='<div><h1>ПОДКЛЮЧЕНИЕ…</h1><p>Сервер на бесплатном хостинге может просыпаться до минуты — подожди, не закрывай вкладку.</p></div>';
 if(!solo){try{R=await connect(code)}catch(e){R=null}}
 if(!solo&&!R)S.noNet=1;enterLobby()}
 function enterLobby(){S.mode='lobby';S.lt=60;S.wait=0;const m=S.me;m.ph='l';m.go=null;m.r=null;m.st='r';m.g=null;
@@ -181,4 +182,9 @@ $('hc').textContent=`${m.cn||0}/${S.NEED}`;$('hk').textContent=m.du?`${(m.k?1:0)
 $('hn').textContent=(m.st==='r'?1:0)+S.oth.filter(p=>p.presence.ph==='p'&&S.ros.includes(p.peer)&&p.presence.s==='r').length}
 function menu(){OV.className='';OV.innerHTML=`<div><h1>SHADOW HUNT</h1><p>Онлайн-кооператив: найди свой ключ, собери монеты и выберись через дверь своего цвета.<br>Пойманные становятся полицейскими и охотятся на друзей.</p><p><input id="nm" placeholder="Имя" maxlength="12"></p><p><input id="cd" placeholder="Код комнаты" value="room1" maxlength="20"></p><button onclick="online(false)">Играть онлайн</button><button class="s" onclick="online(true)">Одному</button></div>`}
 let last=performance.now();function loop(n){const dt=Math.min(.05,(n-last)/1000);last=n;if(S.mode==='play')update(dt);render();requestAnimationFrame(loop)}
+addEventListener('shadownet',e=>{const s=e.detail&&e.detail.state;
+if(s==='reconnecting')say('⚠ Связь пропала — переподключаюсь…');
+else if(s==='online')say('Связь восстановлена');
+else if(s==='newid')say('Связь восстановлена, но твоё место в раунде потеряно — доиграй до конца или выйди в лобби');
+else if(s==='lost')say('Связь потеряна. Обнови страницу и зайди снова')});
 menu();requestAnimationFrame(loop);
