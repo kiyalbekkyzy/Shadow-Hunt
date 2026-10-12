@@ -1,12 +1,22 @@
 <!DOCTYPE html>
 <html lang="ru"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Shadow Hunt Online</title>
 <link rel="stylesheet" href="style.css">
 </head><body>
 <div id="wrap">
-<div id="hud"><span id="hr">—</span><span>🪙 <b id="hc">0/0</b></span><span>🗝 <b id="hk">нет</b></span><span>🧸 <b id="ht">нет</b></span><span>Этаж <b id="hf">1</b></span><span>💡 <b id="hl">15</b></span><span>Беглецов: <b id="hn">0</b></span></div>
+<div id="hud"><span id="hr">—</span><span>🪙 <b id="hc">0/0</b></span><span>🗝 <b id="hk">нет</b> <small id="hg"></small></span><span>🧸 <b id="ht">нет</b></span><span>Этаж <b id="hf">1</b></span><span>💡 <b id="hl">15</b></span><span>Беглецов: <b id="hn">0</b></span></div>
+<div id="stage">
 <canvas id="c" width="960" height="640"></canvas>
+<div id="jb"><div id="jk"></div></div>
+<button class="tbtn" id="bm" type="button">🔊</button>
+<div id="tc">
+<button class="tbtn" id="bq" type="button"><b>Q</b><i>игрушка</i></button>
+<button class="tbtn" id="be" type="button"><b>E</b><i>действие</i></button>
+</div>
+</div>
 <div id="hint">WASD / стрелки — ходьба · E — шкаф/коробка/своя дверь · Q — бросить игрушку · лестницы по краям меняют этаж · каждые 15 с — вспышка света · M — звук</div>
 <div id="ov"></div>
 </div>
