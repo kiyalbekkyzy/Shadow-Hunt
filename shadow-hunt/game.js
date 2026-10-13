@@ -55,7 +55,7 @@ function move(L,e,dx,dy,r){if(hit(L,e.x,e.y,r)||!hit(L,e.x+dx,e.y,r))e.x+=dx;if(
 function los(L,a,b){const d=hyp(b.x-a.x,b.y-a.y),n=d/8|0;for(let i=1;i<n;i++){const x=a.x+(b.x-a.x)*i/n,y=a.y+(b.y-a.y)*i/n;if(L.solids.some(s=>x>s.x&&x<s.x+s.w&&y>s.y&&y<s.y+s.h)||L.sd.some(s=>!dOpen(s)&&x>s.x&&x<s.x+s.w&&y>s.y&&y<s.y+s.h))return false}return true}
 // network
 const myIdx=()=>S.ros?S.ros.indexOf(S.pid):0;
-function pack(){const m=S.me;return{n:m.n,x:Math.round(m.x),y:Math.round(m.y),f:m.f,h:m.hidden?1:0,s:m.st,m:m.m,tm:m.tm,sd:m.sd,sx:Math.round(m.sx||0),sy:Math.round(m.sy||0),sf:m.sf||0,ph:m.ph,go:m.go||null,r:m.r||null,lt:m.lt==null?null:m.lt,g:m.g||null,d:m.du?1:0,cn:m.cn||0,e:m.e||null,cb:m.cb||null}}
+function pack(){const m=S.me;return{n:m.n,x:Math.round(m.x),y:Math.round(m.y),f:m.f,h:m.hidden?1:0,s:m.st,m:m.m,tm:m.tm,sd:m.sd,sx:Math.round(m.sx||0),sy:Math.round(m.sy||0),sf:m.sf||0,ph:m.ph,go:m.go||null,r:m.r||null,lt:m.lt==null?null:m.lt,g:m.g||null,d:m.du?1:0,en:S.mode==='end'?1:0,cn:m.cn||0,e:m.e||null,cb:m.cb||null}}
 function net(){let ps=R?R.peers():[];const me=ps.find(p=>p.isMe&&p.sameTab);S.pid=me?me.peer:'solo';S.oth=ps.filter(p=>!(p.isMe&&p.sameTab)&&p.presence&&p.presence.n);
 if(S.mode==='lobby')lobbyTick();if(R)R.presence(pack()).catch(()=>{})}
 setInterval(()=>{if(S.me)net()},80);
@@ -84,12 +84,12 @@ S.sdSeen={};S.oth.forEach(p=>S.sdSeen[p.peer]=p.presence.sd||0);S.t=0;S.parts=[]
 function skipBn(){if(!S.bn)return false;if(S.bn.go==null)S.bn.go=1;return true}
 function say(t,d){S.msg=t;S.msgT=d||3}
 function burst(x,y,c,n=10){for(let i=0;i<n;i++)S.parts.push({x,y,vx:(Math.random()-.5)*160,vy:(Math.random()-.5)*160,t:.5,c})}
-function endRound(){S.mode='end';const m=S.me;
+function endRound(){S.mode='end';const m=S.me;m.g=null;
 const rows=[{pid:S.pid,n:m.n,i:S.idx,s:m.st,cn:m.cn||0,e:m.e,cb:m.cb,d:m.du,me:1},...S.oth.filter(p=>S.ros.includes(p.peer)&&p.presence.ph==='p').map(p=>({pid:p.peer,n:p.presence.n,i:S.ros.indexOf(p.peer),s:p.presence.s,cn:p.presence.cn||0,e:p.presence.e,cb:p.presence.cb,d:p.presence.d}))];
 rows.forEach(r=>r.ct=rows.filter(x=>x.cb===r.pid).length);
 const win=rows.filter(r=>r.s==='o').sort((a,b)=>a.e-b.e),lose=rows.filter(r=>r.s!=='o').sort((a,b)=>b.ct-a.ct),me=rows[0],won=me.s==='o',med=['🥇','🥈','🥉'];
 const card=(r,k,w)=>`<div class="row ${r.me?'me':''}" style="border-color:${COLS[r.i%8]}"><span><span class="dot" style="background:${COLS[r.i%8]}${r.d?`;box-shadow:7px 0 0 ${COLS[(r.i+4)%8]}`:''}"></span><b>${w?med[k]||'🏁':'🚔'} ${esc(r.n)}${r.me?' (ты)':''}</b></span><span>${w?`сбежал за ${r.e} c`:`поймал: ${r.ct}`} · 🪙 ${r.cn}${r.d?' · ⭐ двойной ключ':''}</span></div>`;
-OV.className='';OV.innerHTML=`<div class="end"><h1 style="color:${won?'#7dff6b':'#ff5d6c'}">${won?'🏆 ПОБЕДА!':win.length?'💀 ТЫ ПРОИГРАЛ':'🚔 ПОЛИЦИЯ ПОБЕДИЛА'}</h1><p>${won?'Ты выбрался из тьмы!':me.s==='c'?'Тебя поймали'+(me.ct?', но ты успел поймать друзей: '+me.ct:''):''}</p>${win.length?'<h3>СБЕЖАЛИ</h3>'+win.map((r,k)=>card(r,k,1)).join(''):'<h3>НИКТО НЕ ВЫБРАЛСЯ</h3>'}${lose.length?'<h3>ПОЛИЦИЯ</h3>'+lose.map((r,k)=>card(r,k,0)).join(''):''}<button onclick="enterLobby()">В лобби</button></div>`;beep(won?800:150,.4);if(won)setTimeout(()=>beep(1100,.3),200)}
+OV.className='';OV.innerHTML=`<div class="end"><h1 style="color:${won?'#7dff6b':'#ff5d6c'}">${won?'🏆 ПОБЕДА!':win.length?'💀 ТЫ ПРОИГРАЛ':'🚔 ПОЛИЦИЯ ПОБЕДИЛА'}</h1><p>${won?'Ты выбрался из тьмы!':me.s==='c'?'Тебя поймали'+(me.ct?', но ты успел поймать друзей: '+me.ct:''):''}</p>${win.length?'<h3>СБЕЖАЛИ</h3>'+win.map((r,k)=>card(r,k,1)).join(''):'<h3>НИКТО НЕ ВЫБРАЛСЯ</h3>'}${lose.length?'<h3>ПОЛИЦИЯ</h3>'+lose.map((r,k)=>card(r,k,0)).join(''):''}<p id="rt" style="opacity:.8">Возврат в главное меню через 15 c</p><button onclick="location.reload()">🏠 В главное меню</button></div>`;S.rt=15;clearInterval(S.rti);S.rti=setInterval(()=>{S.rt--;const e=$('rt');if(e)e.textContent='Возврат в главное меню через '+S.rt+' c';if(S.rt<=0){clearInterval(S.rti);location.reload()}},1000);beep(won?800:150,.4);if(won)setTimeout(()=>beep(1100,.3),200)}
 // input
 addEventListener('keydown',e=>{const c=e.code;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(c)&&S.mode==='play')e.preventDefault();if(e.repeat)return;keys[c]=1;
 if(c==='KeyM'&&document.activeElement.tagName!=='INPUT'){snd=!snd;try{localStorage.setItem('sh_snd',snd?'1':'0')}catch(e){}say(snd?'Звук: вкл':'Звук: выкл')}
@@ -135,7 +135,7 @@ function throwToy(){const m=S.me,L=FL();if(S.bn){skipBn();return}if(!m.toy||m.hi
 m.toy=0;m.sd++;m.sx=x;m.sy=y;m.sf=m.f;sndEvent(S.pid,m.sd,x,y,m.f)}
 function sndEvent(peer,sd,x,y,f){if(S.sdSeen[peer]===sd)return;S.sdSeen[peer]=sd;if(f===S.me.f)S.fx.push({x,y,t:0});beep(880,.12,'square',.06);setTimeout(()=>beep(660,.15,'square',.06),140);
 if(isHost()){const g=S.gs.filter(g=>g.f===f).sort((a,b)=>hyp(a.x-x,a.y-y)-hyp(b.x-x,b.y-y))[0];if(g&&(g.st!=='CHASE'||!g.seen)){g.st='INVESTIGATE';g.tgt={x,y};g.wait=3.5;g.path=null;g.alert=1}}}
-function isHost(){const a=[S.pid,...S.oth.filter(p=>p.presence.ph==='p'&&S.ros.includes(p.peer)).map(p=>p.peer)].sort();return a[0]===S.pid}
+function isHost(){const a=[...(S.mode==='end'?[]:[S.pid]),...S.oth.filter(p=>p.presence.ph==='p'&&!p.presence.en&&S.ros.includes(p.peer)).map(p=>p.peer)].sort();return a[0]===S.pid}
 const flashOn=()=>S.t>14&&(S.t%15)<.8;
 const dualIdx=()=>{if(S.me.du)return S.idx;const p=S.oth.find(p=>p.presence.ph==='p'&&p.presence.d&&S.ros.includes(p.peer));return p?S.ros.indexOf(p.peer):-1};
 // guards (host simulates)
@@ -154,7 +154,7 @@ function becomeCop(by){const m=S.me;m.cb=by||'bot';m.st='c';m.hid=null;m.hidden=
 if(m.rv){m.lost=1;banner('💀 ТЕБЯ ПОЙМАЛИ СНОВА','Второй шанс уже использован — ты ПРОИГРАЛ.\nТеперь ты полицейский до конца раунда.','#ff3050',2)}
 else banner('🚔 ТЕБЯ ПОЙМАЛИ!','Теперь ты ПОЛИЦЕЙСКИЙ. Поймай '+S.cneed+' '+(S.cneed>1?'беглецов':'беглеца')+' — и снова станешь беглецом!\nВернувшись, найди ключ и дверь. Но второй раз поймают — проиграешь.','#4d7bff',2);
 beep(120,.5,'sawtooth',.08)}
-function revive(){const m=S.me;m.st='r';m.rv=1;m.inv=1.5;m.boost=3;S.alert=1;m.hidden=0;m.hid=null;m.k=0;m.k2=0;m.du=0;
+function revive(){const m=S.me;if(m.rv)return;m.st='r';m.rv=1;m.inv=1.5;m.boost=3;S.alert=1;m.hidden=0;m.hid=null;m.k=0;m.k2=0;m.du=0;
 banner('🏃 ТЫ СНОВА БЕГЛЕЦ!','Найди свой ключ и свою дверь — и выбирайся!\nЕсли поймают ещё раз — ПРОИГРЫШ. Полицейские услышат твоё возвращение и бросятся за тобой!','#7dff6b',2);beep(900,.3);setTimeout(()=>beep(1200,.3),200)}
 function banner(t,s,c,d,sp){S.bn={t:15,d:15,title:t,sub:s,col:c,sp:sp?1:0,go:null}}// плашка висит, пока игрок не начнёт ходить; через 1 с после этого игра для него начинается (15 с — страховка)
 const allMask=k=>{let v=S.me[k]||0;S.oth.forEach(p=>{if(p.presence.ph==='p')v|=p.presence[k]||0});return v};
@@ -191,10 +191,10 @@ if(hp)hp.presence.g.forEach((v,i)=>{const g=S.gs[i];if(!g)return;g.x=v[0];g.y=v[
 S.gd.forEach((d,i)=>{const g=S.gs[i],a=Math.min(1,dt*14);d.x+=(g.x-d.x)*a;d.y+=(g.y-d.y)*a;d.a=g.a;d.st=g.st;d.alert=g.alert;d.ph=(d.ph||0)+dt*6});
 if(run&&!frozen&&!m.hidden&&!(m.inv>0)){const hh=hunters(m.f).find(h=>hyp(h.x-m.x,h.y-m.y)<20);if(hh)becomeCop(hh.peer)}
 if(cop&&!m.rv)S.oth.forEach(p=>{const q=p.presence;if(q.ph==='p'&&q.s==='c'&&q.cb===S.pid&&S.ros.includes(p.peer)&&!S.cg.has(p.peer)){S.cg.add(p.peer);say(`Ты поймал: ${q.n} (${S.cg.size}/${S.cneed})`,3);beep(500,.2)}});
-if(cop&&!m.rv&&S.cg.size>=S.cneed)revive();
+if(cop&&!m.rv&&!m.lost&&S.cg.size>=S.cneed)revive();
 if(S.bn){S.bn.t-=dt;if(S.bn.go!=null)S.bn.go-=dt;if(S.bn.t<=0||(S.bn.go!=null&&S.bn.go<=0))S.bn=null}
 const rr=S.oth.filter(p=>p.presence.ph==='p'&&S.ros.includes(p.peer));
-if(S.t>3&&m.st!=='r'&&!rr.some(p=>p.presence.s==='r'))endRound();
+S.nr=(m.st!=='r'&&!rr.some(p=>p.presence.s==='r'))?(S.nr||0)+dt:0;if(S.t>3&&S.nr>3)endRound();
 S.parts.forEach(q=>{q.x+=q.vx*dt;q.y+=q.vy*dt;q.t-=dt});S.parts=S.parts.filter(q=>q.t>0);S.texts.forEach(q=>{q.y-=30*dt;q.t-=dt});S.texts=S.texts.filter(q=>q.t>0);
 S.fx.forEach(f=>f.t+=dt);S.fx=S.fx.filter(f=>f.t<1.2);if(S.msgT>0)S.msgT-=dt}
 // drawing
@@ -276,7 +276,7 @@ X.save();X.globalAlpha=al;X.fillStyle='rgba(2,6,14,.88)';X.fillRect(6,by,VW-12,b
 let yy=by+pd+fs;X.font=`bold ${fs}px "Courier New"`;X.shadowColor=b.col;X.shadowBlur=14;X.fillStyle=b.col;tl.forEach(l=>{X.fillText(l,VW/2,yy);yy+=fs+6});X.shadowBlur=0;
 yy+=10-6+sf-fs+6-6;X.font=`bold ${sf}px "Courier New"`;X.fillStyle='#fff';yy=by+pd+th+10+sf;sl.forEach(l=>{X.fillText(l,VW/2,yy);yy+=sf+6});X.restore()}
 $('hr').textContent=m.st==='c'?(m.lost?'💀 Проиграл (полиция)':'🚔 ПОЛИЦЕЙСКИЙ'):m.st==='o'?'✅ Сбежал':(m.rv?'🏃 Беглец (2-й шанс)':'🏃 Беглец');$('hr').style.color=m.st==='c'?'#4d7bff':COLS[S.idx%8];
-$('hq').textContent=m.st==='c'&&!m.lost?`🎯 Поймать: ${S.cg.size}/${S.cneed}`:''
+$('hq').textContent=m.st==='c'&&!m.lost?`🎯 Поймать: ${S.cg.size}/${S.cneed} · ♻ шанс 1 из 1`:m.st==='c'?'♻ шанс использован':m.rv&&m.st==='r'?'♻ возрождение использовано':'♻ шанс: 1'
 $('hc').textContent=`${m.cn||0}/${S.NEED}`;$('hk').textContent=m.du?`${(m.k?1:0)+(m.k2?1:0)}/2`:(m.k?'есть':'нет');{const kf=(S.idx+1)%2+1,df=m.du?1:S.idx%2+1,nk=!m.k?kf:(m.du&&!m.k2?2:0);$('hg').textContent=m.st!=='r'?'':nk?'(ключ: этаж '+nk+')':'(дверь: этаж '+df+')';$('hg').style.color=COLS[S.idx%8]}$('ht').textContent=m.toy?'есть (Q)':'нет';$('hf').textContent=m.f+1;$('hl').textContent=fo?'сейчас':Math.ceil(15-(S.t%15));
 $('hn').textContent=(m.st==='r'?1:0)+S.oth.filter(p=>p.presence.ph==='p'&&S.ros.includes(p.peer)&&p.presence.s==='r').length;tui(m)}
 function menu(){OV.className='';OV.innerHTML=`<div><h1>SHADOW HUNT</h1><p>Онлайн-кооператив: найди свой ключ, собери монеты и выберись через дверь своего цвета.<br>Пойманные становятся полицейскими и охотятся на друзей.</p><div class="rules"><b>ПРАВИЛА</b><br>🏃 Ты беглец: найди свой ключ, собери монеты, выберись через свою дверь.<br>🚔 Поймал полицейский — ты полицейский. Поймай ~30% игроков (из 10 — троих, вдвоём — одного), и ты СНОВА беглец и можешь добежать до двери.<br>☝ Возродиться можно только ОДИН раз: поймают второй раз — проигрыш.<br>🫥 Прятаться можно только ВНУТРИ шкафа или коробки и не дольше 8 секунд.<br>🕳 Жёлтая лента на 2 этаже — люк, упадёшь на 1 этаж. 🧽 Тряпка — падаешь на 2–3 с. ⚡ Часы — ускорение 3 с. Комнаты с дверями открываются и закрываются по таймеру.</div><p><input id="nm" placeholder="Имя" maxlength="12"></p><p><input id="cd" placeholder="Код комнаты" value="room1" maxlength="20"></p><button onclick="online(false)">Играть онлайн</button><button class="s" onclick="online(true)">Одному</button></div>`}
