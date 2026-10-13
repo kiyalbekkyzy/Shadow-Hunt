@@ -158,7 +158,7 @@ function revive(){const m=S.me;m.st='r';m.rv=1;m.inv=1.5;m.boost=3;S.alert=1;m.h
 banner('🏃 ТЫ СНОВА БЕГЛЕЦ!','Найди свой ключ и свою дверь — и выбирайся!\nЕсли поймают ещё раз — ПРОИГРЫШ. Полицейские услышат твоё возвращение и бросятся за тобой!','#7dff6b',2);beep(900,.3);setTimeout(()=>beep(1200,.3),200)}
 function banner(t,s,c,d,sp){S.bn={t:15,d:15,title:t,sub:s,col:c,sp:sp?1:0,go:null}}// плашка висит, пока игрок не начнёт ходить; через 1 с после этого игра для него начинается (15 с — страховка)
 const allMask=k=>{let v=S.me[k]||0;S.oth.forEach(p=>{if(p.presence.ph==='p')v|=p.presence[k]||0});return v};
-function update(dt){const m=S.me,L=FL(),pz=!!(S.bn&&S.bn.sp);if(!pz)S.t+=dt;const fo=flashOn();if(fo&&!S.fo){beep(520,.35,'sine',.07);say('💡 Вспышка света! Видно всё вокруг')}S.fo=fo;const run=m.st==='r',cop=m.st==='c',frozen=!!S.bn;
+function update(dt){const m=S.me,L=FL(),pz=!!(S.bn&&S.bn.sp);if(!pz)S.t+=dt;const fo=flashOn();if(fo&&!S.fo){beep(520,.35,'sine',.07);say('💡 Вспышка света! Видно всё вокруг')}S.fo=fo;const run=m.st==='r',cop=m.st==='c',frozen=!!S.bn,inp=!!(keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight||(joy.on&&joy.mag));if(inp||frozen)S.lastIn=performance.now();
 // пока на экране плашка: для этого игрока пауза, он «призрак» — невидим и неуязвим, остальные играют дальше
 if(frozen)m.hidden=1;else if(S.wasFz&&m.st!=='o'){m.hidden=m.hid?1:0;if(S.alert&&m.st==='r'){S.alert=0;m.sd++;m.sx=m.x;m.sy=m.y;m.sf=m.f;sndEvent(S.pid,m.sd,m.x,m.y,m.f);say('🔔 Полицейские услышали твоё возвращение — бегут к тебе!',3)}}S.wasFz=frozen;
 if((run||cop)&&!frozen){let dx=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),dy=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
@@ -177,6 +177,11 @@ L.toys.forEach((c,i)=>{const id=m.f*2+i;if(!(tk>>id&1)&&!m.toy&&hyp(c.x-m.x,c.y-
 const k=L.keys.find(k=>k.c===S.idx);if(k&&!m.k&&hyp(k.x-m.x,k.y-m.y)<20){m.k=1;burst(k.x,k.y,COLS[S.idx],16);say('Ключ найден! Теперь к своей двери');beep(1200,.25)}
 if(L.dual&&!m.du&&!(tk>>10&1)&&hyp(L.dual.x-m.x,L.dual.y-m.y)<22){m.du=1;m.tm|=1<<10;burst(L.dual.x,L.dual.y,'#fff',20);say('Ты двухцветный! Нужны 2 ключа и двойная дверь (1 этаж)');beep(1500,.4)}
 if(L.k2&&m.du&&!m.k2&&hyp(L.k2.x-m.x,L.k2.y-m.y)<20){m.k2=1;burst(L.k2.x,L.k2.y,'#fff',16);say('Второй ключ найден!');beep(1300,.25)}}
+// автопогоня: полицейский, которым давно не управляют (3 с без движения), сам идёт ловить ближайшего беглеца
+S.ap=0;if(cop&&!frozen&&!m.hid&&!(m.slip>0)&&!inp&&performance.now()-(S.lastIn||0)>3000){const rs=S.oth.filter(p=>{const q=p.presence;return q.ph==='p'&&q.s==='r'&&!q.h&&S.ros.includes(p.peer)});
+if(rs.length){let best=null,bd=1e9;rs.forEach(p=>{const q=p.presence,o=ro(p),d=hyp(o.x-m.x,o.y-m.y)+(q.f===m.f?0:700);if(d<bd){bd=d;best={x:o.x,y:o.y,f:q.f}}});
+const goal=best.f===m.f?best:ST.map(s=>({x:s.x+s.w/2,y:s.y+s.h/2})).sort((a,b)=>hyp(a.x-m.x,a.y-m.y)-hyp(b.x-m.x,b.y-m.y))[0];
+follow(m,L,goal,150,dt);m.pf={x:Math.cos(m.a||0),y:Math.sin(m.a||0)};m.phs+=dt*10;S.ap=1}}
 // others interp + sounds
 S.oth.forEach(p=>{const q=p.presence,o=ro(p),a=Math.min(1,dt*14);o.x+=(q.x-o.x)*a;o.y+=(q.y-o.y)*a;if(q.sd&&q.ph==='p')sndEvent(p.peer,q.sd,q.sx,q.sy,q.sf)});
 // guards
@@ -260,6 +265,7 @@ else if(m.hcd>0&&m.st==='r'){X.save();X.textAlign='center';X.font='bold 13px "Co
 if(m.slip>0){X.save();X.textAlign='center';X.font='bold 30px "Courier New"';X.fillStyle='#ffe07a';X.fillText('💫 УПАЛ! '+m.slip.toFixed(1),VW/2,VH/2-70);X.restore()}
 if(m.boost>0){X.save();X.textAlign='center';X.font='bold 18px "Courier New"';X.fillStyle='#7dffea';X.fillText('⚡ УСКОРЕНИЕ '+m.boost.toFixed(1),VW/2,VH-60);X.restore()}
 if(m.inv>0&&m.st==='r'){X.save();X.textAlign='center';X.font='bold 16px "Courier New"';X.fillStyle='#7dff6b';X.fillText('🛡 Защита '+m.inv.toFixed(1),VW/2,VH-82);X.restore()}
+if(S.ap&&!S.bn){X.save();X.textAlign='center';X.font='bold 13px "Courier New"';const tx=(mobile()?'🤖 Автопогоня · двигайся сам, чтобы взять управление':'🤖 Автопогоня за беглецом · нажми WASD, чтобы управлять самому');X.fillStyle='rgba(0,0,0,.65)';X.fillRect(VW/2-X.measureText(tx).width/2-8,VH-46,X.measureText(tx).width+16,22);X.fillStyle='#8fb4ff';X.fillText(tx,VW/2,VH-30);X.restore()}
 // большой баннер роли (текст переносится по ширине, рамка считается по реальной высоте)
 if(S.bn){const b=S.bn,al=Math.min(1,b.t,(b.d-b.t)*3+.2)*(b.go==null?1:Math.max(0,Math.min(1,b.go*2))),u=cl(VW/(C.clientWidth||VW),1,2.2),pd=Math.round(12*u),mw=VW-2*pd-12;
 const wrap=(txt,font)=>{X.font=font;const out=[];String(txt).split('\n').forEach(par=>{let cur='';par.split(' ').forEach(w2=>{const tt=cur?cur+' '+w2:w2;if(cur&&X.measureText(tt).width>mw){out.push(cur);cur=w2}else cur=tt});out.push(cur)});return out};
