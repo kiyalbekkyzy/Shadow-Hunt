@@ -80,8 +80,8 @@ function startGame(sd,ros){S.used.push(sd);S.seed=sd;S.ros=ros;S.n=ros.length;S.
 S.NEED=cl((30/S.n)|0,2,6);S.cneed=Math.max(1,Math.round(S.n*.3));S.cg=new Set();S.bn=null;S.shake=0;S.gs=S.fl.flatMap(L=>L.gs.map((p,k)=>({f:L.f,x:p.x,y:p.y,a:0,st:'PATROL',pi:(k*2)%5,wait:0,rp:0,path:null,lost:0,last:{x:p.x,y:p.y},tgt:null,alert:0,seen:false,ph:0})));
 S.gd=S.gs.map(g=>({f:g.f,x:g.x,y:g.y,a:0,st:'PATROL'}));const m=S.me,i=S.idx;
 Object.assign(m,{x:140+(i%4)*60,y:160+(i>>2)*60,f:0,ph:'p',st:'r',m:0,tm:0,sd:0,k:0,cn:0,toy:0,du:0,k2:0,e:null,cb:null,hid:null,hidden:0,pf:{x:1,y:0},phs:0,rv:0,lost:0,inv:0,boost:0,slip:0,slipCd:0,hidT:0,hcd:0});
-S.sdSeen={};S.oth.forEach(p=>S.sdSeen[p.peer]=p.presence.sd||0);S.t=0;S.parts=[];S.texts=[];S.fx=[];S.o={};S.onSt=true;S.mode='play';OV.className='h';banner('🏃 ТЫ — БЕГЛЕЦ ('+CN[S.idx%8]+')','Найди ключ своего цвета, собери монеты и беги к своей двери.\nПоймает полицейский — станешь полицейским и должен будешь поймать '+S.cneed+' бегл., чтобы вернуться (1 раз!).','#ffc83d',9,1);say(`Ты — ${CN[S.idx%8]}. Ключ: этаж ${(S.idx+1)%2+1}, дверь: этаж ${S.idx%2+1}. Стрелка у героя показывает цель. Монет нужно: ${S.NEED}`,9)}
-function skipBn(){if(S.bn&&S.bn.d-S.bn.t>1.2){S.bn=null;return true}return !!S.bn}
+S.sdSeen={};S.oth.forEach(p=>S.sdSeen[p.peer]=p.presence.sd||0);S.t=0;S.parts=[];S.texts=[];S.fx=[];S.o={};S.onSt=true;S.mode='play';OV.className='h';banner('🏃 ТЫ — БЕГЛЕЦ ('+CN[S.idx%8]+')','Найди ключ своего цвета, собери монеты и беги к своей двери.\nПоймает полицейский — станешь полицейским и должен будешь поймать '+S.cneed+' бегл., чтобы вернуться (1 раз!).','#ffc83d',5,1);say(`Ты — ${CN[S.idx%8]}. Ключ: этаж ${(S.idx+1)%2+1}, дверь: этаж ${S.idx%2+1}. Стрелка у героя показывает цель. Монет нужно: ${S.NEED}`,9)}
+function skipBn(){if(S.bn&&S.bn.d-S.bn.t>.8){S.bn=null;return true}return !!S.bn}
 function say(t,d){S.msg=t;S.msgT=d||3}
 function burst(x,y,c,n=10){for(let i=0;i<n;i++)S.parts.push({x,y,vx:(Math.random()-.5)*160,vy:(Math.random()-.5)*160,t:.5,c})}
 function endRound(){S.mode='end';const m=S.me;
@@ -151,11 +151,11 @@ else if(g.st==='INVESTIGATE'){if(hyp(g.x-g.tgt.x,g.y-g.tgt.y)>14)follow(g,L,g.tg
 else if(g.st==='RETURN'){follow(g,L,pt,90,dt);if(hyp(g.x-pt.x,g.y-pt.y)<14)g.st='PATROL'}
 else{if(g.wait>0)g.wait-=dt;else{follow(g,L,pt,82,dt);if(hyp(g.x-pt.x,g.y-pt.y)<14){g.pi=(g.pi+1)%5;g.wait=.6;g.path=null}}}}
 function becomeCop(by){const m=S.me;m.cb=by||'bot';m.st='c';m.hid=null;m.hidden=0;m.toy=0;m.k=0;m.du=0;m.k2=0;m.slip=0;m.boost=0;
-if(m.rv){m.lost=1;banner('💀 ТЕБЯ ПОЙМАЛИ СНОВА','Второй шанс уже использован — ты ПРОИГРАЛ.\nТеперь ты полицейский до конца раунда.','#ff3050',7)}
-else banner('🚔 ТЕБЯ ПОЙМАЛИ!','Теперь ты ПОЛИЦЕЙСКИЙ. Поймай '+S.cneed+' '+(S.cneed>1?'беглецов':'беглеца')+' — и снова станешь беглецом!\nВернувшись, найди ключ и дверь. Но второй раз поймают — проиграешь.','#4d7bff',8);
+if(m.rv){m.lost=1;banner('💀 ТЕБЯ ПОЙМАЛИ СНОВА','Второй шанс уже использован — ты ПРОИГРАЛ.\nТеперь ты полицейский до конца раунда.','#ff3050',2)}
+else banner('🚔 ТЕБЯ ПОЙМАЛИ!','Теперь ты ПОЛИЦЕЙСКИЙ. Поймай '+S.cneed+' '+(S.cneed>1?'беглецов':'беглеца')+' — и снова станешь беглецом!\nВернувшись, найди ключ и дверь. Но второй раз поймают — проиграешь.','#4d7bff',2);
 beep(120,.5,'sawtooth',.08)}
 function revive(){const m=S.me;m.st='r';m.rv=1;m.inv=4;m.boost=3;m.hidden=0;m.hid=null;m.k=0;m.k2=0;m.du=0;
-banner('🏃 ТЫ СНОВА БЕГЛЕЦ!','Найди свой ключ и свою дверь — и выбирайся!\nЕсли поймают ещё раз — ПРОИГРЫШ. 4 секунды защиты!','#7dff6b',7);beep(900,.3);setTimeout(()=>beep(1200,.3),200)}
+banner('🏃 ТЫ СНОВА БЕГЛЕЦ!','Найди свой ключ и свою дверь — и выбирайся!\nЕсли поймают ещё раз — ПРОИГРЫШ. 4 секунды защиты!','#7dff6b',2);beep(900,.3);setTimeout(()=>beep(1200,.3),200)}
 function banner(t,s,c,d,sp){S.bn={t:d||5,d:d||5,title:t,sub:s,col:c,sp:sp?1:0}}
 const allMask=k=>{let v=S.me[k]||0;S.oth.forEach(p=>{if(p.presence.ph==='p')v|=p.presence[k]||0});return v};
 function update(dt){const m=S.me,L=FL(),pz=!!(S.bn&&S.bn.sp);if(!pz)S.t+=dt;const fo=flashOn();if(fo&&!S.fo){beep(520,.35,'sine',.07);say('💡 Вспышка света! Видно всё вокруг')}S.fo=fo;const run=m.st==='r',cop=m.st==='c',frozen=!!S.bn;
