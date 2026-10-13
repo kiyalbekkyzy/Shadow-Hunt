@@ -52,3 +52,4 @@ body.mobile.play #bm{display:block}
 #be.hd{background:rgba(125,255,107,.9);box-shadow:0 0 16px rgba(125,255,107,.45)}
 #bm{position:absolute;right:calc(10px + env(safe-area-inset-right,0px));top:8px;z-index:6;margin:0;padding:0;width:40px;height:40px;border-radius:50%;font-size:18px;line-height:1;background:rgba(10,20,30,.55);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.3)}
 @media(max-height:420px){#be{width:80px;height:80px}#bq{width:62px;height:62px;margin-bottom:26px}#tc .tbtn b{font-size:24px}#tc .tbtn i{display:none}#jb{width:96px;height:96px;margin:-48px 0 0 -48px;top:calc(100% - 70px)}}
+.rules{max-width:560px;margin:10px auto;text-align:left;font-size:12px;line-height:1.55;background:#0d1c29;border:1px solid #2b5a5e;border-radius:8px;padding:8px 12px}.rules b{color:#ffc83d;letter-spacing:2px}
