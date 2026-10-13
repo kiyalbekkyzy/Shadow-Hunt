@@ -246,7 +246,7 @@ S.fx.forEach(f=>{X.strokeStyle=`rgba(255,200,120,${1-f.t/1.2})`;X.lineWidth=2;X.
 X.font='bold 14px "Courier New"';X.fillStyle='#ffe07a';S.texts.forEach(q=>X.fillText(q.s,q.x,q.y));X.restore();
 if(S.msgT>0&&!S.bn){const u=cl(VW/(C.clientWidth||VW),1,2.2),fs=Math.round(14*u),lh=Math.round(18*u),mw=Math.min(VW-16,640*Math.min(u,1.4));X.font=`bold ${fs}px "Courier New"`;X.textAlign='center';const ln=[];let cur='';
 for(const wd of String(S.msg).split(' ')){const tt=cur?cur+' '+wd:wd;if(cur&&X.measureText(tt).width>mw-16){ln.push(cur);cur=wd}else cur=tt}ln.push(cur);
-const bh=ln.length*lh+10,by=mobile()?8:VH-bh-14;X.globalAlpha=Math.min(1,S.msgT);X.fillStyle='rgba(0,0,0,.65)';X.fillRect(VW/2-mw/2,by,mw,bh);X.fillStyle='#ffe07a';ln.forEach((t2,i)=>X.fillText(t2,VW/2,by+lh*(i+1)-2));X.globalAlpha=1}
+const bh=ln.length*lh+10,by=mobile()?58:VH-bh-14;X.globalAlpha=Math.min(1,S.msgT);X.fillStyle='rgba(0,0,0,.65)';X.fillRect(VW/2-mw/2,by,mw,bh);X.fillStyle='#ffe07a';ln.forEach((t2,i)=>X.fillText(t2,VW/2,by+lh*(i+1)-2));X.globalAlpha=1}
 {// рамка роли
 const rc=m.st==='c'?(m.lost?'#ff3050':'#4d7bff'):m.st==='o'?'#7dff6b':(m.rv?'#7dff6b':'#ffc83d');X.save();X.lineWidth=6;X.strokeStyle=rc;X.globalAlpha=m.st==='c'?.55+Math.sin(t*6)*.3:.4;X.strokeRect(3,3,VW-6,VH-6);X.restore();
 X.save();X.textAlign='left';X.font='bold 13px "Courier New"';const rt=m.st==='c'?(m.lost?'💀 ПРОИГРАЛ · ПОЛИЦЕЙСКИЙ':'🚔 ТЫ ПОЛИЦЕЙСКИЙ'):m.st==='o'?'✅ СБЕЖАЛ':(m.rv?'🏃 БЕГЛЕЦ (2-й шанс!)':'🏃 ТЫ БЕГЛЕЦ');X.fillStyle='rgba(0,0,0,.6)';X.fillRect(8,mobile()?30:8,X.measureText(rt).width+14,22);X.fillStyle=rc;X.fillText(rt,15,(mobile()?30:8)+16);X.restore()}
@@ -257,10 +257,15 @@ else if(m.hcd>0&&m.st==='r'){X.save();X.textAlign='center';X.font='bold 13px "Co
 if(m.slip>0){X.save();X.textAlign='center';X.font='bold 30px "Courier New"';X.fillStyle='#ffe07a';X.fillText('💫 УПАЛ! '+m.slip.toFixed(1),VW/2,VH/2-70);X.restore()}
 if(m.boost>0){X.save();X.textAlign='center';X.font='bold 18px "Courier New"';X.fillStyle='#7dffea';X.fillText('⚡ УСКОРЕНИЕ '+m.boost.toFixed(1),VW/2,VH-60);X.restore()}
 if(m.inv>0&&m.st==='r'){X.save();X.textAlign='center';X.font='bold 16px "Courier New"';X.fillStyle='#7dff6b';X.fillText('🛡 Защита '+m.inv.toFixed(1),VW/2,VH-82);X.restore()}
-// большой баннер роли
-if(S.bn){const b=S.bn,a=Math.min(1,b.t,(b.d-b.t)*3+.2),ls=b.sub.split('\n'),h=70+ls.length*24;X.save();X.globalAlpha=a;X.fillStyle='rgba(2,6,14,.82)';X.fillRect(0,VH/2-h/2-40,VW,h);X.fillStyle=b.col;X.fillRect(0,VH/2-h/2-40,VW,4);X.fillRect(0,VH/2+h/2-44,VW,4);X.textAlign='center';
-const fs=Math.min(40,Math.floor(VW/(b.title.length*.62)));X.font=`bold ${fs}px "Courier New"`;X.shadowColor=b.col;X.shadowBlur=18;X.fillStyle=b.col;X.fillText(b.title,VW/2,VH/2-h/2-40+12+fs);X.shadowBlur=0;
-const sf=VW<600?13:16;X.font=`bold ${sf}px "Courier New"`;X.fillStyle='#fff';let yy=VH/2-h/2-40+24+fs+sf;ls.forEach(l=>{const wd=l.split(' ');let cur='';wd.forEach(w2=>{const tt=cur?cur+' '+w2:w2;if(cur&&X.measureText(tt).width>VW-40){X.fillText(cur,VW/2,yy);yy+=sf+6;cur=w2}else cur=tt});X.fillText(cur,VW/2,yy);yy+=sf+6});X.restore()}
+// большой баннер роли (текст переносится по ширине, рамка считается по реальной высоте)
+if(S.bn){const b=S.bn,al=Math.min(1,b.t,(b.d-b.t)*3+.2),u=cl(VW/(C.clientWidth||VW),1,2.2),pd=Math.round(12*u),mw=VW-2*pd-12;
+const wrap=(txt,font)=>{X.font=font;const out=[];String(txt).split('\n').forEach(par=>{let cur='';par.split(' ').forEach(w2=>{const tt=cur?cur+' '+w2:w2;if(cur&&X.measureText(tt).width>mw){out.push(cur);cur=w2}else cur=tt});out.push(cur)});return out};
+const fs=Math.round(cl(VW/12,18,34)*Math.min(u,1.4)),sf=Math.round(cl(VW/34,12,16)*Math.min(u,1.5));
+const tl=wrap(b.title,`bold ${fs}px "Courier New"`),sl=wrap(b.sub,`bold ${sf}px "Courier New"`);
+const th=tl.length*(fs+6),sh=sl.length*(sf+6),bh=pd*2+th+sh+10,by=Math.max(4,Math.round(VH/2-bh/2-20));
+X.save();X.globalAlpha=al;X.fillStyle='rgba(2,6,14,.88)';X.fillRect(6,by,VW-12,bh);X.fillStyle=b.col;X.fillRect(6,by,VW-12,4);X.fillRect(6,by+bh-4,VW-12,4);X.textAlign='center';
+let yy=by+pd+fs;X.font=`bold ${fs}px "Courier New"`;X.shadowColor=b.col;X.shadowBlur=14;X.fillStyle=b.col;tl.forEach(l=>{X.fillText(l,VW/2,yy);yy+=fs+6});X.shadowBlur=0;
+yy+=10-6+sf-fs+6-6;X.font=`bold ${sf}px "Courier New"`;X.fillStyle='#fff';yy=by+pd+th+10+sf;sl.forEach(l=>{X.fillText(l,VW/2,yy);yy+=sf+6});X.restore()}
 $('hr').textContent=m.st==='c'?(m.lost?'💀 Проиграл (полиция)':'🚔 ПОЛИЦЕЙСКИЙ'):m.st==='o'?'✅ Сбежал':(m.rv?'🏃 Беглец (2-й шанс)':'🏃 Беглец');$('hr').style.color=m.st==='c'?'#4d7bff':COLS[S.idx%8];
 $('hq').textContent=m.st==='c'&&!m.lost?`🎯 Поймать: ${S.cg.size}/${S.cneed}`:''
 $('hc').textContent=`${m.cn||0}/${S.NEED}`;$('hk').textContent=m.du?`${(m.k?1:0)+(m.k2?1:0)}/2`:(m.k?'есть':'нет');{const kf=(S.idx+1)%2+1,df=m.du?1:S.idx%2+1,nk=!m.k?kf:(m.du&&!m.k2?2:0);$('hg').textContent=m.st!=='r'?'':nk?'(ключ: этаж '+nk+')':'(дверь: этаж '+df+')';$('hg').style.color=COLS[S.idx%8]}$('ht').textContent=m.toy?'есть (Q)':'нет';$('hf').textContent=m.f+1;$('hl').textContent=fo?'сейчас':Math.ceil(15-(S.t%15));
