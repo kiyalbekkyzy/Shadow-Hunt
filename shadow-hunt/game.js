@@ -81,7 +81,7 @@ S.NEED=cl((30/S.n)|0,2,6);S.cneed=Math.max(1,Math.round(S.n*.3));S.cg=new Set();
 S.gd=S.gs.map(g=>({f:g.f,x:g.x,y:g.y,a:0,st:'PATROL'}));const m=S.me,i=S.idx;
 Object.assign(m,{x:140+(i%4)*60,y:160+(i>>2)*60,f:0,ph:'p',st:'r',m:0,tm:0,sd:0,k:0,cn:0,toy:0,du:0,k2:0,e:null,cb:null,hid:null,hidden:0,pf:{x:1,y:0},phs:0,rv:0,lost:0,inv:0,boost:0,slip:0,slipCd:0,hidT:0,hcd:0});
 S.sdSeen={};S.oth.forEach(p=>S.sdSeen[p.peer]=p.presence.sd||0);S.t=0;S.parts=[];S.texts=[];S.fx=[];S.o={};S.onSt=true;S.mode='play';OV.className='h';banner('🏃 ТЫ — БЕГЛЕЦ ('+CN[S.idx%8]+')','Найди ключ своего цвета, собери монеты и беги к своей двери.\nПоймает полицейский — станешь полицейским и должен будешь поймать '+S.cneed+' бегл., чтобы вернуться (1 раз!).','#ffc83d',5,1);say(`Ты — ${CN[S.idx%8]}. Ключ: этаж ${(S.idx+1)%2+1}, дверь: этаж ${S.idx%2+1}. Стрелка у героя показывает цель. Монет нужно: ${S.NEED}`,9)}
-function skipBn(){if(S.bn&&S.bn.d-S.bn.t>.8){S.bn=null;return true}return !!S.bn}
+function skipBn(){if(!S.bn)return false;if(S.bn.go==null)S.bn.go=1;return true}
 function say(t,d){S.msg=t;S.msgT=d||3}
 function burst(x,y,c,n=10){for(let i=0;i<n;i++)S.parts.push({x,y,vx:(Math.random()-.5)*160,vy:(Math.random()-.5)*160,t:.5,c})}
 function endRound(){S.mode='end';const m=S.me;
@@ -93,7 +93,7 @@ OV.className='';OV.innerHTML=`<div class="end"><h1 style="color:${won?'#7dff6b':
 // input
 addEventListener('keydown',e=>{const c=e.code;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(c)&&S.mode==='play')e.preventDefault();if(e.repeat)return;keys[c]=1;
 if(c==='KeyM'&&document.activeElement.tagName!=='INPUT'){snd=!snd;try{localStorage.setItem('sh_snd',snd?'1':'0')}catch(e){}say(snd?'Звук: вкл':'Звук: выкл')}
-if(S.mode!=='play')return;if(skipBn())return;if(c==='KeyE')interact();if(c==='KeyQ')throwToy()});
+if(S.mode!=='play')return;if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space'].includes(c)&&skipBn())return;if(c==='KeyE')interact();if(c==='KeyQ')throwToy()});
 addEventListener('keyup',e=>{keys[e.code]=0});
 
 // ---- mobile / touch controls ----
@@ -120,7 +120,7 @@ if(C.width!==VW||C.height!==VH){C.width=VW;C.height=VH;dk.width=VW;dk.height=VH}
 const FL=()=>S.fl[S.me.f];
 const ro=p=>{const q=p.presence,o=S.o[p.peer]||(S.o[p.peer]={x:q.x,y:q.y});return o};
 function hunters(f){return S.gd.filter(g=>g.f===f).concat(S.oth.filter(p=>p.presence.ph==='p'&&p.presence.s==='c'&&p.presence.f===f).map(p=>{const o=ro(p);return{x:o.x,y:o.y,peer:p.peer}}))}
-function interact(){const m=S.me,L=FL();if(m.st!=='r'||S.bn)return;
+function interact(){const m=S.me,L=FL();if(S.bn){skipBn();return}if(m.st!=='r')return;
 if(m.slip>0)return;if(m.hid){leaveCover(0);return}
 const dc=m.du?8:S.idx,d=L.doors.find(d=>d.c===dc);if(d&&hyp(m.x-(d.x+35),m.y-10)<70){if(m.cn>=S.NEED&&m.k&&(!m.du||m.k2)){m.st='o';m.e=Math.round(S.t);m.hidden=1;say('Ты сбежал! Следи за друзьями');beep(900,.3);return}say(`Нужно ${S.NEED} монет и ${m.du?'2 ключа':'свой ключ'} (${m.cn}/${S.NEED}, ключей ${(m.k?1:0)+(m.k2?1:0)}/${m.du?2:1})`);beep(150,.15);return}
 const od=L.doors.find(d=>d.c===S.idx);if(m.du&&od&&hyp(m.x-(od.x+35),m.y-10)<70){say('Ты двухцветный — нужна двойная дверь на 1 этаже');return}
@@ -131,7 +131,7 @@ const HIDE_T=8;
 function leaveCover(forced){const m=S.me,L=FL(),c=m.hid;if(!c)return;m.hid=null;m.hidden=0;m.hcd=forced?3:1;
 const sp=[[0,c.h/2+14],[0,-c.h/2-14],[c.w/2+14,0],[-c.w/2-14,0]];let p=sp.find(q=>!hit(L,c.x+c.w/2+q[0],c.y+c.h/2+q[1],9))||sp[0];m.x=c.x+c.w/2+p[0];m.y=c.y+c.h/2+p[1];
 if(forced){say('⏰ Время вышло! Тебя выбросило из укрытия',3);beep(180,.3,'sawtooth',.07)}else beep(300,.08)}
-function throwToy(){const m=S.me,L=FL();if(S.bn||!m.toy||m.hid||m.st!=='r')return;let x=m.x,y=m.y;for(let i=0;i<30;i++){const nx=x+m.pf.x*6,ny=y+m.pf.y*6;if(hit(L,nx,ny,5))break;x=nx;y=ny}
+function throwToy(){const m=S.me,L=FL();if(S.bn){skipBn();return}if(!m.toy||m.hid||m.st!=='r')return;let x=m.x,y=m.y;for(let i=0;i<30;i++){const nx=x+m.pf.x*6,ny=y+m.pf.y*6;if(hit(L,nx,ny,5))break;x=nx;y=ny}
 m.toy=0;m.sd++;m.sx=x;m.sy=y;m.sf=m.f;sndEvent(S.pid,m.sd,x,y,m.f)}
 function sndEvent(peer,sd,x,y,f){if(S.sdSeen[peer]===sd)return;S.sdSeen[peer]=sd;if(f===S.me.f)S.fx.push({x,y,t:0});beep(880,.12,'square',.06);setTimeout(()=>beep(660,.15,'square',.06),140);
 if(isHost()){const g=S.gs.filter(g=>g.f===f).sort((a,b)=>hyp(a.x-x,a.y-y)-hyp(b.x-x,b.y-y))[0];if(g&&(g.st!=='CHASE'||!g.seen)){g.st='INVESTIGATE';g.tgt={x,y};g.wait=3.5;g.path=null;g.alert=1}}}
@@ -154,13 +154,13 @@ function becomeCop(by){const m=S.me;m.cb=by||'bot';m.st='c';m.hid=null;m.hidden=
 if(m.rv){m.lost=1;banner('💀 ТЕБЯ ПОЙМАЛИ СНОВА','Второй шанс уже использован — ты ПРОИГРАЛ.\nТеперь ты полицейский до конца раунда.','#ff3050',2)}
 else banner('🚔 ТЕБЯ ПОЙМАЛИ!','Теперь ты ПОЛИЦЕЙСКИЙ. Поймай '+S.cneed+' '+(S.cneed>1?'беглецов':'беглеца')+' — и снова станешь беглецом!\nВернувшись, найди ключ и дверь. Но второй раз поймают — проиграешь.','#4d7bff',2);
 beep(120,.5,'sawtooth',.08)}
-function revive(){const m=S.me;m.st='r';m.rv=1;m.inv=4;m.boost=3;m.hidden=0;m.hid=null;m.k=0;m.k2=0;m.du=0;
-banner('🏃 ТЫ СНОВА БЕГЛЕЦ!','Найди свой ключ и свою дверь — и выбирайся!\nЕсли поймают ещё раз — ПРОИГРЫШ. 4 секунды защиты!','#7dff6b',2);beep(900,.3);setTimeout(()=>beep(1200,.3),200)}
-function banner(t,s,c,d,sp){S.bn={t:d||5,d:d||5,title:t,sub:s,col:c,sp:sp?1:0}}
+function revive(){const m=S.me;m.st='r';m.rv=1;m.inv=1.5;m.boost=3;S.alert=1;m.hidden=0;m.hid=null;m.k=0;m.k2=0;m.du=0;
+banner('🏃 ТЫ СНОВА БЕГЛЕЦ!','Найди свой ключ и свою дверь — и выбирайся!\nЕсли поймают ещё раз — ПРОИГРЫШ. Полицейские услышат твоё возвращение и бросятся за тобой!','#7dff6b',2);beep(900,.3);setTimeout(()=>beep(1200,.3),200)}
+function banner(t,s,c,d,sp){S.bn={t:15,d:15,title:t,sub:s,col:c,sp:sp?1:0,go:null}}// плашка висит, пока игрок не начнёт ходить; через 1 с после этого игра для него начинается (15 с — страховка)
 const allMask=k=>{let v=S.me[k]||0;S.oth.forEach(p=>{if(p.presence.ph==='p')v|=p.presence[k]||0});return v};
 function update(dt){const m=S.me,L=FL(),pz=!!(S.bn&&S.bn.sp);if(!pz)S.t+=dt;const fo=flashOn();if(fo&&!S.fo){beep(520,.35,'sine',.07);say('💡 Вспышка света! Видно всё вокруг')}S.fo=fo;const run=m.st==='r',cop=m.st==='c',frozen=!!S.bn;
 // пока на экране плашка: для этого игрока пауза, он «призрак» — невидим и неуязвим, остальные играют дальше
-if(frozen)m.hidden=1;else if(S.wasFz&&m.st!=='o')m.hidden=m.hid?1:0;S.wasFz=frozen;
+if(frozen)m.hidden=1;else if(S.wasFz&&m.st!=='o'){m.hidden=m.hid?1:0;if(S.alert&&m.st==='r'){S.alert=0;m.sd++;m.sx=m.x;m.sy=m.y;m.sf=m.f;sndEvent(S.pid,m.sd,m.x,m.y,m.f);say('🔔 Полицейские услышали твоё возвращение — бегут к тебе!',3)}}S.wasFz=frozen;
 if((run||cop)&&!frozen){let dx=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),dy=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
 if(joy.on&&joy.mag){dx=joy.x;dy=joy.y}if(m.slip>0){m.slip-=dt;const k=Math.max(0,m.slip)/2.5;move(L,m,m.pf.x*120*k*dt,m.pf.y*120*k*dt,9);m.phs+=dt*2}else if(!m.hid&&(dx||dy)){const d=hyp(dx,dy);dx/=d;dy/=d;m.pf={x:dx,y:dy};const sp=(cop?150:135)*(m.boost>0?1.7:1)*(joy.on&&joy.mag?Math.max(.6,joy.mag):1);move(L,m,dx*sp*dt,dy*sp*dt,9);m.phs+=dt*12}
 const inSt=ST.some(s=>m.x>s.x&&m.x<s.x+s.w&&m.y>s.y&&m.y<s.y+s.h);if(inSt&&!S.onSt&&!m.hid){m.f=1-m.f;beep(420,.1);say(m.f?'Второй этаж':'Первый этаж')}S.onSt=inSt}
@@ -187,7 +187,7 @@ S.gd.forEach((d,i)=>{const g=S.gs[i],a=Math.min(1,dt*14);d.x+=(g.x-d.x)*a;d.y+=(
 if(run&&!frozen&&!m.hidden&&!(m.inv>0)){const hh=hunters(m.f).find(h=>hyp(h.x-m.x,h.y-m.y)<20);if(hh)becomeCop(hh.peer)}
 if(cop&&!m.rv)S.oth.forEach(p=>{const q=p.presence;if(q.ph==='p'&&q.s==='c'&&q.cb===S.pid&&S.ros.includes(p.peer)&&!S.cg.has(p.peer)){S.cg.add(p.peer);say(`Ты поймал: ${q.n} (${S.cg.size}/${S.cneed})`,3);beep(500,.2)}});
 if(cop&&!m.rv&&S.cg.size>=S.cneed)revive();
-if(S.bn){S.bn.t-=dt;if(S.bn.t<=0)S.bn=null}
+if(S.bn){S.bn.t-=dt;if(S.bn.go!=null)S.bn.go-=dt;if(S.bn.t<=0||(S.bn.go!=null&&S.bn.go<=0))S.bn=null}
 const rr=S.oth.filter(p=>p.presence.ph==='p'&&S.ros.includes(p.peer));
 if(S.t>3&&m.st!=='r'&&!rr.some(p=>p.presence.s==='r'))endRound();
 S.parts.forEach(q=>{q.x+=q.vx*dt;q.y+=q.vy*dt;q.t-=dt});S.parts=S.parts.filter(q=>q.t>0);S.texts.forEach(q=>{q.y-=30*dt;q.t-=dt});S.texts=S.texts.filter(q=>q.t>0);
@@ -261,10 +261,10 @@ if(m.slip>0){X.save();X.textAlign='center';X.font='bold 30px "Courier New"';X.fi
 if(m.boost>0){X.save();X.textAlign='center';X.font='bold 18px "Courier New"';X.fillStyle='#7dffea';X.fillText('⚡ УСКОРЕНИЕ '+m.boost.toFixed(1),VW/2,VH-60);X.restore()}
 if(m.inv>0&&m.st==='r'){X.save();X.textAlign='center';X.font='bold 16px "Courier New"';X.fillStyle='#7dff6b';X.fillText('🛡 Защита '+m.inv.toFixed(1),VW/2,VH-82);X.restore()}
 // большой баннер роли (текст переносится по ширине, рамка считается по реальной высоте)
-if(S.bn){const b=S.bn,al=Math.min(1,b.t,(b.d-b.t)*3+.2),u=cl(VW/(C.clientWidth||VW),1,2.2),pd=Math.round(12*u),mw=VW-2*pd-12;
+if(S.bn){const b=S.bn,al=Math.min(1,b.t,(b.d-b.t)*3+.2)*(b.go==null?1:Math.max(0,Math.min(1,b.go*2))),u=cl(VW/(C.clientWidth||VW),1,2.2),pd=Math.round(12*u),mw=VW-2*pd-12;
 const wrap=(txt,font)=>{X.font=font;const out=[];String(txt).split('\n').forEach(par=>{let cur='';par.split(' ').forEach(w2=>{const tt=cur?cur+' '+w2:w2;if(cur&&X.measureText(tt).width>mw){out.push(cur);cur=w2}else cur=tt});out.push(cur)});return out};
 const fs=Math.round(cl(VW/12,18,34)*Math.min(u,1.4)),sf=Math.round(cl(VW/34,12,16)*Math.min(u,1.5));
-const tl=wrap(b.title,`bold ${fs}px "Courier New"`),sl=wrap(b.sub+(b.sp?'\n⏸ ИГРА НА ПАУЗЕ — всё замерло. Начало через '+Math.ceil(b.t)+' c · нажми, чтобы начать сразу':'\n⏸ Для тебя пауза — ты невидим, остальные играют. Старт через '+Math.ceil(b.t)+' c · нажми, чтобы пропустить'),`bold ${sf}px "Courier New"`);
+const tl=wrap(b.title,`bold ${fs}px "Courier New"`),sl=wrap(b.sub+(b.go!=null?'\n▶ Начинаем через '+Math.max(1,Math.ceil(b.go))+' c…':b.sp?'\n⏸ ВСЯ ИГРА НА ПАУЗЕ. Начни ходить — и через 1 секунду игра начнётся':'\n⏸ Для тебя пауза: ты невидим, остальные играют. Начни ходить — через 1 секунду вернёшься в игру'),`bold ${sf}px "Courier New"`);
 const th=tl.length*(fs+6),sh=sl.length*(sf+6),bh=pd*2+th+sh+10,by=Math.max(4,Math.round(VH/2-bh/2-20));
 X.save();X.globalAlpha=al;X.fillStyle='rgba(2,6,14,.88)';X.fillRect(6,by,VW-12,bh);X.fillStyle=b.col;X.fillRect(6,by,VW-12,4);X.fillRect(6,by+bh-4,VW-12,4);X.textAlign='center';
 let yy=by+pd+fs;X.font=`bold ${fs}px "Courier New"`;X.shadowColor=b.col;X.shadowBlur=14;X.fillStyle=b.col;tl.forEach(l=>{X.fillText(l,VW/2,yy);yy+=fs+6});X.shadowBlur=0;
