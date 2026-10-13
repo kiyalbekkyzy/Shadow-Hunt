@@ -1,3 +1,5 @@
+https://kiyalbekkyzy.github.io/Shadow-Hunt/shadow-hunt/
+
 Shadow Hunt Online — Технические требования
 Документ технических требований · Версия 2.0 · 12 октября 2026
 1. Обзор проекта
