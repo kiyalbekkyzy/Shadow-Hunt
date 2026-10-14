@@ -77,7 +77,7 @@ OV.className='';OV.innerHTML=`<div><h1>ЛОББИ</h1><p>${R?'Скажи дру�
 function beginRound(){if(S.mode!=='lobby')return;const sd=1+Math.floor(Math.random()*2e9);const ros=[S.pid,...S.oth.filter(p=>p.presence.ph==='l').map(p=>p.peer)].sort();S.me.go=sd;S.me.r=ros;startGame(sd,ros)}
 // game start
 function startGame(sd,ros){S.used.push(sd);S.seed=sd;S.ros=ros;S.n=ros.length;S.idx=Math.max(0,ros.indexOf(S.pid));seed=sd;S.gpf=S.n<2?1:S.n<4?2:3;S.fl=[genFloor(0,S.n,S.gpf),genFloor(1,S.n,S.gpf)];
-S.NEED=cl((30/S.n)|0,2,6);S.cneed=Math.max(1,Math.round(S.n*.3));S.cg=new Set();S.bn=null;S.shake=0;S.gs=S.fl.flatMap(L=>L.gs.map((p,k)=>({f:L.f,x:p.x,y:p.y,a:0,st:'PATROL',pi:(k*2)%5,wait:0,rp:0,path:null,lost:0,last:{x:p.x,y:p.y},tgt:null,alert:0,seen:false,ph:0})));
+S.NEED=cl((24/S.n)|0,2,6);S.cneed=Math.max(1,Math.round(S.n*.3));S.cg=new Set();S.bn=null;S.shake=0;S.gs=S.fl.flatMap(L=>L.gs.map((p,k)=>({f:L.f,x:p.x,y:p.y,a:0,st:'PATROL',pi:(k*2)%5,wait:0,rp:0,path:null,lost:0,last:{x:p.x,y:p.y},tgt:null,alert:0,seen:false,ph:0})));
 S.gd=S.gs.map(g=>({f:g.f,x:g.x,y:g.y,a:0,st:'PATROL'}));const m=S.me,i=S.idx;
 Object.assign(m,{x:140+(i%4)*60,y:160+(i>>2)*60,f:0,ph:'p',st:'r',m:0,tm:0,sd:0,k:0,cn:0,toy:0,du:0,k2:0,e:null,cb:null,hid:null,hidden:0,pf:{x:1,y:0},phs:0,rv:0,lost:0,inv:0,boost:0,slip:0,slipCd:0,hidT:0,hcd:0});
 S.sdSeen={};S.oth.forEach(p=>S.sdSeen[p.peer]=p.presence.sd||0);S.t=0;S.parts=[];S.texts=[];S.fx=[];S.o={};S.onSt=true;S.mode='play';OV.className='h';banner('🏃 ТЫ — БЕГЛЕЦ ('+CN[S.idx%8]+')','Найди ключ своего цвета, собери монеты и беги к своей двери.\nПоймает полицейский — станешь полицейским и должен будешь поймать '+S.cneed+' бегл., чтобы вернуться (1 раз!).','#ffc83d',5,1);say(`Ты — ${CN[S.idx%8]}. Ключ: этаж ${(S.idx+1)%2+1}, дверь: этаж ${S.idx%2+1}. Стрелка у героя показывает цель. Монет нужно: ${S.NEED}`,9)}
@@ -93,7 +93,7 @@ OV.className='';OV.innerHTML=`<div class="end"><h1 style="color:${won?'#7dff6b':
 // input
 addEventListener('keydown',e=>{const c=e.code;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','Tab'].includes(c)&&S.mode==='play')e.preventDefault();if(e.repeat)return;keys[c]=1;
 if(c==='KeyM'&&document.activeElement.tagName!=='INPUT'){snd=!snd;try{localStorage.setItem('sh_snd',snd?'1':'0')}catch(e){}say(snd?'Звук: вкл':'Звук: выкл')}
-if(S.mode==='play'&&specOn()){if(c==='Digit1'||c==='Numpad1')S.vf=0;else if(c==='Digit2'||c==='Numpad2')S.vf=1;else if(c==='Tab')S.vf=1-(S.vf==null?S.me.f:S.vf)}
+if(S.mode==='play'&&specOn()){if(c==='Digit1'||c==='Numpad1'){S.vf=0;S.vfAuto=false}else if(c==='Digit2'||c==='Numpad2'){S.vf=1;S.vfAuto=false}else if(c==='Tab'){S.vf=1-(S.vf==null?S.me.f:S.vf);S.vfAuto=false}else if(c==='KeyA'||c==='Digit0')S.vfAuto=true}
 if(S.mode!=='play')return;if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space'].includes(c)&&skipBn())return;if(c==='KeyE')interact();if(c==='KeyQ')throwToy()});
 addEventListener('keyup',e=>{keys[e.code]=0});
 
@@ -105,7 +105,7 @@ const joy={on:0,id:null,x:0,y:0,mag:0,ox:0,oy:0},JR=56;
 const ST_=$('stage'),JB=$('jb'),JK=$('jk');
 function joyOff(){joy.on=0;joy.id=null;joy.x=joy.y=joy.mag=0;JB.classList.remove('on');JB.style.left=JB.style.top='';JK.style.transform='translate(0,0)'}
 function joyMove(e){const dx=e.clientX-joy.ox,dy=e.clientY-joy.oy,d=hyp(dx,dy),k=d>JR?JR/d:1;JK.style.transform=`translate(${dx*k}px,${dy*k}px)`;const mg=Math.min(1,d/JR);if(mg<.18){joy.x=joy.y=joy.mag=0}else{joy.x=dx/d;joy.y=dy/d;joy.mag=mg}}
-ST_.addEventListener('pointerdown',e=>{if(S.mode==='play'&&specOn()&&S.sb){const r=C.getBoundingClientRect(),px=(e.clientX-r.left)*VW/r.width,py=(e.clientY-r.top)*VH/r.height;S.sb.forEach((b,i)=>{if(px>=b.x&&px<=b.x+b.w&&py>=b.y&&py<=b.y+b.h)S.vf=i})}
+ST_.addEventListener('pointerdown',e=>{if(S.mode==='play'&&specOn()&&S.sb){const r=C.getBoundingClientRect(),px=(e.clientX-r.left)*VW/r.width,py=(e.clientY-r.top)*VH/r.height;S.sb.forEach((b,i)=>{if(px>=b.x&&px<=b.x+b.w&&py>=b.y&&py<=b.y+b.h){if(i<2){S.vf=i;S.vfAuto=false}else S.vfAuto=true}});if(S.mm&&px>=S.mm.x&&px<=S.mm.x+S.mm.w&&py>=S.mm.y&&py<=S.mm.y+S.mm.h){S.vf=1-S.vf;S.vfAuto=false}}
 if(S.mode==='play')skipBn();if(!mobile()||S.mode!=='play'||joy.on||e.target.closest('.tbtn'))return;e.preventDefault();try{ST_.setPointerCapture(e.pointerId)}catch(_){}
 const r=ST_.getBoundingClientRect();joy.on=1;joy.id=e.pointerId;joy.ox=e.clientX;joy.oy=e.clientY;JB.style.left=(e.clientX-r.left)+'px';JB.style.top=(e.clientY-r.top)+'px';JB.classList.add('on');joyMove(e)});
 ST_.addEventListener('pointermove',e=>{if(joy.on&&e.pointerId===joy.id){e.preventDefault();joyMove(e)}});
@@ -122,7 +122,7 @@ if(C.width!==VW||C.height!==VH){C.width=VW;C.height=VH;dk.width=VW;dk.height=VH}
 const FL=()=>S.fl[S.me.f];
 const ro=p=>{const q=p.presence,o=S.o[p.peer]||(S.o[p.peer]={x:q.x,y:q.y});return o};
 function hunters(f){return S.gd.filter(g=>g.f===f).concat(S.oth.filter(p=>p.presence.ph==='p'&&p.presence.s==='c'&&p.presence.f===f).map(p=>{const o=ro(p);return{x:o.x,y:o.y,peer:p.peer}}))}
-function interact(){const m=S.me,L=FL();if(S.bn){skipBn();return}if(specOn()){S.vf=1-(S.vf==null?m.f:S.vf);beep(420,.08);return}if(m.st!=='r')return;
+function interact(){const m=S.me,L=FL();if(S.bn){skipBn();return}if(specOn()){S.vf=1-(S.vf==null?m.f:S.vf);S.vfAuto=false;beep(420,.08);return}if(m.st!=='r')return;
 if(m.slip>0)return;if(m.hid){leaveCover(0);return}
 const dc=m.du?8:S.idx,d=L.doors.find(d=>d.c===dc);if(d&&hyp(m.x-(d.x+35),m.y-10)<70){if(m.cn>=S.NEED&&m.k&&(!m.du||m.k2)){m.st='o';m.e=Math.round(S.t);m.hidden=1;S.vf=m.f;banner('🏆 ТЫ ВЫБРАЛСЯ!','Ты победил! Теперь ты наблюдаешь за игрой сверху.\nРаунд закончится, когда доиграют все.','#7dff6b',0,0,3,'Режим наблюдателя через');beep(900,.3);return}say(`Нужно ${S.NEED} монет и ${m.du?'2 ключа':'свой ключ'} (${m.cn}/${S.NEED}, ключей ${(m.k?1:0)+(m.k2?1:0)}/${m.du?2:1})`);beep(150,.15);return}
 const od=L.doors.find(d=>d.c===S.idx);if(m.du&&od&&hyp(m.x-(od.x+35),m.y-10)<70){say('Ты двухцветный — нужна двойная дверь на 1 этаже');return}
@@ -152,7 +152,7 @@ if(g.st==='CHASE'){follow(g,L,g.seen?best:g.last,138,dt);if(!g.seen){g.lost+=dt;
 else if(g.st==='INVESTIGATE'){if(hyp(g.x-g.tgt.x,g.y-g.tgt.y)>14)follow(g,L,g.tgt,100,dt);else{g.wait-=dt;g.a+=dt*2.5;if(g.wait<=0){g.st='RETURN';g.path=null}}}
 else if(g.st==='RETURN'){follow(g,L,pt,90,dt);if(hyp(g.x-pt.x,g.y-pt.y)<14)g.st='PATROL'}
 else{if(g.wait>0)g.wait-=dt;else{follow(g,L,pt,82,dt);if(hyp(g.x-pt.x,g.y-pt.y)<14){g.pi=(g.pi+1)%5;g.wait=.6;g.path=null}}}}
-function becomeCop(by){const m=S.me;m.cb=by||'bot';m.st='c';m.hid=null;m.hidden=0;m.toy=0;m.k=0;m.du=0;m.k2=0;m.slip=0;m.boost=0;
+function becomeCop(by){const m=S.me;if(m.cn){say('🪙 Твои монеты вернулись на карту',3)}m.m=0;m.cn=0;m.cb=by||'bot';m.st='c';m.hid=null;m.hidden=0;m.toy=0;m.k=0;m.du=0;m.k2=0;m.slip=0;m.boost=0;
 if(m.rv){jail('caught');return}
 banner('🚔 ТЕБЯ ПОЙМАЛИ!','Теперь ты ПОЛИЦЕЙСКИЙ. Поймай '+S.cneed+' '+(S.cneed>1?'беглецов':'беглеца')+' — и снова станешь беглецом!\nВернувшись, найди ключ и дверь. Но второй раз поймают — проиграешь.','#4d7bff',2);
 beep(120,.5,'sawtooth',.08)}
@@ -181,11 +181,6 @@ L.toys.forEach((c,i)=>{const id=m.f*2+i;if(!(tk>>id&1)&&!m.toy&&hyp(c.x-m.x,c.y-
 const k=L.keys.find(k=>k.c===S.idx);if(k&&!m.k&&hyp(k.x-m.x,k.y-m.y)<20){m.k=1;burst(k.x,k.y,COLS[S.idx],16);say('Ключ найден! Теперь к своей двери');beep(1200,.25)}
 if(L.dual&&!m.du&&!(tk>>10&1)&&hyp(L.dual.x-m.x,L.dual.y-m.y)<22){m.du=1;m.tm|=1<<10;burst(L.dual.x,L.dual.y,'#fff',20);say('Ты двухцветный! Нужны 2 ключа и двойная дверь (1 этаж)');beep(1500,.4)}
 if(L.k2&&m.du&&!m.k2&&hyp(L.k2.x-m.x,L.k2.y-m.y)<20){m.k2=1;burst(L.k2.x,L.k2.y,'#fff',16);say('Второй ключ найден!');beep(1300,.25)}}
-// автопогоня: полицейский, которым давно не управляют (3 с без движения), сам идёт ловить ближайшего беглеца
-S.ap=0;if(cop&&!frozen&&!m.hid&&!(m.slip>0)&&!inp&&performance.now()-(S.lastIn||0)>3000){const rs=S.oth.filter(p=>{const q=p.presence;return q.ph==='p'&&q.s==='r'&&!q.h&&S.ros.includes(p.peer)});
-if(rs.length){let best=null,bd=1e9;rs.forEach(p=>{const q=p.presence,o=ro(p),d=hyp(o.x-m.x,o.y-m.y)+(q.f===m.f?0:700);if(d<bd){bd=d;best={x:o.x,y:o.y,f:q.f}}});
-const goal=best.f===m.f?best:ST.map(s=>({x:s.x+s.w/2,y:s.y+s.h/2})).sort((a,b)=>hyp(a.x-m.x,a.y-m.y)-hyp(b.x-m.x,b.y-m.y))[0];
-follow(m,L,goal,150,dt);m.pf={x:Math.cos(m.a||0),y:Math.sin(m.a||0)};m.phs+=dt*10;S.ap=1}}
 // others interp + sounds
 S.oth.forEach(p=>{const q=p.presence,o=ro(p),a=Math.min(1,dt*14);o.x+=(q.x-o.x)*a;o.y+=(q.y-o.y)*a;if(q.sd&&q.ph==='p')sndEvent(p.peer,q.sd,q.sx,q.sy,q.sf)});
 // guards
@@ -194,13 +189,12 @@ else{m.g=null;const hp=S.ros.map(r=>S.oth.find(p=>p.peer===r&&p.presence.g&&p.pr
 if(hp)hp.presence.g.forEach((v,i)=>{const g=S.gs[i];if(!g)return;g.x=v[0];g.y=v[1];g.a=v[2]/10;g.st=['PATROL','CHASE','INVESTIGATE'][v[3]]})}
 S.gd.forEach((d,i)=>{const g=S.gs[i],a=Math.min(1,dt*14);d.x+=(g.x-d.x)*a;d.y+=(g.y-d.y)*a;d.a=g.a;d.st=g.st;d.alert=g.alert;d.ph=(d.ph||0)+dt*6});
 if(run&&!frozen&&!m.hidden&&!(m.inv>0)){const hh=hunters(m.f).find(h=>hyp(h.x-m.x,h.y-m.y)<20);if(hh)becomeCop(hh.peer)}
-if(cop&&!m.rv)S.oth.forEach(p=>{const q=p.presence;if(q.ph==='p'&&(q.s==='c'||q.s==='j')&&q.cb===S.pid&&S.ros.includes(p.peer)&&!S.cg.has(p.peer)){S.cg.add(p.peer);say(`Ты поймал: ${q.n} (${S.cg.size}/${S.cneed})`,3);beep(500,.2)}});
+if(cop&&!m.rv)S.oth.forEach(p=>{const q=p.presence;if(q.ph==='p'&&(q.s==='c'||q.s==='j')&&q.cb===S.pid&&S.ros.includes(p.peer)&&!S.cg.has(p.peer)){S.cg.add(p.peer);say(q.s==='j'?`⛓ ${q.n} уже использовал шанс — сидит в тюрьме! (${S.cg.size}/${S.cneed})`:`Ты поймал: ${q.n} (${S.cg.size}/${S.cneed})`,4);beep(500,.2)}});
 if(cop&&!m.rv&&!m.lost&&S.cg.size>=S.cneed)revive();
 if(S.bn){S.bn.t-=dt;if(S.bn.go!=null)S.bn.go-=dt;if(S.bn.t<=0||(S.bn.go!=null&&S.bn.go<=0))S.bn=null}
 const rr=S.oth.filter(p=>p.presence.ph==='p'&&S.ros.includes(p.peer));
 const anyRun=m.st==='r'||rr.some(p=>p.presence.s==='r'),fin=s=>s==='o'||s==='j';
-S.nr=anyRun?0:(S.nr||0)+dt;if(S.t>3&&S.nr>3&&m.st==='c')jail('nor');
-S.nf=(fin(m.st)&&rr.every(p=>fin(p.presence.s)))?(S.nf||0)+dt:0;if(S.t>3&&S.nf>1.5)endRound();
+S.nr=anyRun?0:(S.nr||0)+dt;if(S.t>3&&S.nr>3)endRound();// беглецов на арене не осталось → раунд закончен
 S.parts.forEach(q=>{q.x+=q.vx*dt;q.y+=q.vy*dt;q.t-=dt});S.parts=S.parts.filter(q=>q.t>0);S.texts.forEach(q=>{q.y-=30*dt;q.t-=dt});S.texts=S.texts.filter(q=>q.t>0);
 S.fx.forEach(f=>f.t+=dt);S.fx=S.fx.filter(f=>f.t<1.2);if(S.msgT>0)S.msgT-=dt}
 // drawing
@@ -230,7 +224,10 @@ X.save();X.globalAlpha=al;X.fillStyle='rgba(2,6,14,.88)';X.fillRect(6,by,VW-12,b
 let yy=by+pd+fs;X.font=`bold ${fs}px "Courier New"`;X.shadowColor=b.col;X.shadowBlur=14;X.fillStyle=b.col;tl.forEach(l=>{X.fillText(l,VW/2,yy);yy+=fs+6});X.shadowBlur=0;
 yy+=10-6+sf-fs+6-6;X.font=`bold ${sf}px "Courier New"`;X.fillStyle='#fff';yy=by+pd+th+10+sf;sl.forEach(l=>{X.fillText(l,VW/2,yy);yy+=sf+6});X.restore()}
 }
-function renderSpec(){const m=S.me,t=performance.now()/1000,f=S.vf==null?m.f:S.vf;S.vf=f;const L=S.fl[f],u=cl(VW/(C.clientWidth||VW),1,2.2),fs=Math.round(12*u),top=Math.round(34*u),bot=Math.round(26*u)*2+8;
+function specFloor(m){if(S.vf==null){S.vf=m.f;S.vfAuto=true}
+if(S.vfAuto!==false&&(!S.vfT||performance.now()-S.vfT>2500)){S.vfT=performance.now();const c=[0,0];S.oth.forEach(p=>{const q=p.presence;if(q.ph==='p'&&S.ros.includes(p.peer)&&(q.f===0||q.f===1)){if(q.s==='r')c[q.f]+=2;else if(q.s==='c')c[q.f]++}});if(c[0]!==c[1])S.vf=c[1]>c[0]?1:0}
+return S.vf}
+function renderSpec(){const m=S.me,t=performance.now()/1000,f=specFloor(m);const L=S.fl[f],u=cl(VW/(C.clientWidth||VW),1,2.2),fs=Math.round(12*u),top=Math.round(34*u),bot=Math.round(26*u)*2+8;
 const sc=Math.min(VW/WW,(VH-top-bot)/WH),ox=(VW-WW*sc)/2,oy=top+((VH-top-bot)-WH*sc)/2,won=m.st==='o';
 X.fillStyle='#050a12';X.fillRect(0,0,VW,VH);X.save();X.translate(ox,oy);X.scale(sc,sc);X.drawImage(FI[f],0,0);
 L.rags.forEach(r=>{X.save();X.translate(r.x+16,r.y+11);X.rotate(r.a);X.fillStyle='#d9d0b4';X.beginPath();X.ellipse(0,0,17,11,0,0,7);X.fill();X.restore()});
@@ -253,15 +250,21 @@ ps.filter(p=>p.f===f&&p.s!=='o').sort((a,b)=>a.y-b.y).forEach(p=>{if(p.me){X.str
 person(p.x,p.y,t*8,COLS[p.i%8],p.s==='c',0,t,p.d?COLS[(p.i+4)%8]:null,0);if(p.s==='j')bars(p.x,p.y);
 X.font=`bold ${lbl}px "Courier New"`;X.textAlign='center';X.lineWidth=3/sc;X.strokeStyle='#000';X.fillStyle=COLS[p.i%8];const tx=(p.s==='c'?'🚔 ':p.s==='j'?'⛓ ':'')+p.n+(p.me?' (ты)':'');X.strokeText(tx,p.x,p.y-30);X.fillText(tx,p.x,p.y-30)});
 X.restore();
+{const of=1-f,mw=Math.round(VW*(mobile()?.36:.27)),ms=mw/WW,mh=Math.round(WH*ms),mx=VW-mw-8,my=VH-bot-mh-8;S.mm={x:mx,y:my,w:mw,h:mh};
+X.save();X.fillStyle='rgba(5,10,18,.95)';X.fillRect(mx-3,my-15,mw+6,mh+18);X.drawImage(FI[of],mx,my,mw,mh);X.fillStyle=of?'#2c3566':'#1d3a52';S.fl[of].solids.forEach(w=>X.fillRect(mx+w.x*ms,my+w.y*ms,Math.max(1,w.w*ms),Math.max(1,w.h*ms)));
+S.fl[of].holes.forEach(h=>{X.fillStyle='#ffd21f';X.fillRect(mx+h.x*ms,my+h.y*ms,Math.max(2,h.w*ms),Math.max(2,h.h*ms))});
+S.gd.filter(g=>g.f===of).forEach(g=>{X.fillStyle='#ff2a45';X.beginPath();X.arc(mx+g.x*ms,my+g.y*ms,3.2,0,7);X.fill()});
+ps.filter(p=>p.f===of&&p.s!=='o').forEach(p=>{X.fillStyle=COLS[p.i%8];X.beginPath();X.arc(mx+p.x*ms,my+p.y*ms,4.2,0,7);X.fill();X.strokeStyle=p.s==='c'?'#4d7bff':p.s==='j'?'#888':'#000';X.lineWidth=2;X.stroke()});
+X.strokeStyle='#ffc83d';X.lineWidth=1.5;X.strokeRect(mx-1,my-1,mw+2,mh+2);X.fillStyle='#ffc83d';X.textAlign='left';X.font=`bold ${Math.round(fs*.85)}px "Courier New"`;X.fillText('Этаж '+(of+1)+' · нажми, чтобы открыть',mx,my-4);X.restore()}
 const rc=won?'#7dff6b':'#ff3050';X.save();X.lineWidth=6;X.strokeStyle=rc;X.globalAlpha=.5;X.strokeRect(3,3,VW-6,VH-6);X.restore();
 X.fillStyle='rgba(0,0,0,.7)';X.fillRect(0,0,VW,top);X.textAlign='left';X.font=`bold ${Math.round(fs*1.05)}px "Courier New"`;X.fillStyle=rc;
 X.fillText(mobile()?(won?'🏆 ПОБЕДА · 👁':'⛓ ТЮРЬМА · 👁'):(won?'🏆 ТЫ ВЫБРАЛСЯ · 👁 НАБЛЮДЕНИЕ ЗА ИГРОЙ':'⛓ ТЫ В ТЮРЬМЕ · 👁 НАБЛЮДЕНИЕ ЗА ИГРОЙ'),10,Math.round(top*.64));
-const bw=Math.round(70*u),re=VW-(mobile()?Math.round(54*u):8);S.sb=[0,1].map(i=>({x:re-(2-i)*(bw+4)+4,y:4,w:bw,h:top-8}));
-S.sb.forEach((b,i)=>{const n=ps.filter(p=>p.f===i&&p.s!=='o').length;X.fillStyle=f===i?'#ffc83d':'#16384a';X.fillRect(b.x,b.y,b.w,b.h);X.fillStyle=f===i?'#1a1200':'#cfe6ee';X.textAlign='center';X.font=`bold ${fs}px "Courier New"`;X.fillText('Этаж '+(i+1)+' ('+n+')',b.x+b.w/2,b.y+b.h*.68)});
+const bw=Math.round((mobile()?52:70)*u),re=VW-(mobile()?Math.round(54*u):8);S.sb=[0,1,2].map(i=>({x:re-(3-i)*(bw+4)+4,y:4,w:bw,h:top-8}));
+S.sb.forEach((b,i)=>{const on=i<2?f===i:S.vfAuto!==false,n=i<2?ps.filter(p=>p.f===i&&p.s!=='o').length:0;X.fillStyle=on?'#ffc83d':'#16384a';X.fillRect(b.x,b.y,b.w,b.h);X.fillStyle=on?'#1a1200':'#cfe6ee';X.textAlign='center';X.font=`bold ${fs}px "Courier New"`;X.fillText(i<2?(mobile()?'Э'+(i+1)+'('+n+')':'Этаж '+(i+1)+' ('+n+')'):'Авто',b.x+b.w/2,b.y+b.h*.68)});
 // легенда
 X.fillStyle='rgba(0,0,0,.7)';X.fillRect(0,VH-bot,VW,bot);X.textAlign='left';X.font=`bold ${fs}px "Courier New"`;let lx=8,ly=VH-bot+Math.round(18*u);
 ps.forEach(p=>{const tx=(p.s==='o'?'✅ ':p.s==='c'?'🚔 ':p.s==='j'?'⛓ ':'🏃 ')+p.n,wd=X.measureText(tx).width+24;if(lx+wd>VW-6){lx=8;ly+=Math.round(18*u)}X.fillStyle=COLS[p.i%8];X.beginPath();X.arc(lx+5,ly-4,5,0,7);X.fill();X.fillStyle='#cfe6ee';X.fillText(tx,lx+14,ly);lx+=wd+8});
-X.fillStyle='#8fd0c0';X.textAlign='right';X.fillText(mobile()?'Нажми на этаж сверху':'Этаж: клавиши 1 / 2 / Tab',VW-8,VH-6);
+X.fillStyle='#8fd0c0';X.textAlign='right';X.fillText(mobile()?'Нажми на этаж сверху':'Этаж: 1 / 2 / Tab · A — авто',VW-8,VH-6);
 $('hr').textContent=won?'✅ Сбежал (наблюдаешь)':'⛓ В тюрьме (наблюдаешь)';$('hr').style.color=rc;$('hq').textContent='';$('hf').textContent=f+1;$('hn').textContent=ps.filter(p=>p.s==='r').length;
 drawBn()}
 function render(){if(!S.fl){X.fillStyle='#050a12';X.fillRect(0,0,VW,VH);return}
@@ -321,7 +324,6 @@ else if(m.hcd>0&&m.st==='r'){X.save();X.textAlign='center';X.font='bold 13px "Co
 if(m.slip>0){X.save();X.textAlign='center';X.font='bold 30px "Courier New"';X.fillStyle='#ffe07a';X.fillText('💫 УПАЛ! '+m.slip.toFixed(1),VW/2,VH/2-70);X.restore()}
 if(m.boost>0){X.save();X.textAlign='center';X.font='bold 18px "Courier New"';X.fillStyle='#7dffea';X.fillText('⚡ УСКОРЕНИЕ '+m.boost.toFixed(1),VW/2,VH-60);X.restore()}
 if(m.inv>0&&m.st==='r'){X.save();X.textAlign='center';X.font='bold 16px "Courier New"';X.fillStyle='#7dff6b';X.fillText('🛡 Защита '+m.inv.toFixed(1),VW/2,VH-82);X.restore()}
-if(S.ap&&!S.bn){X.save();X.textAlign='center';X.font='bold 13px "Courier New"';const tx=(mobile()?'🤖 Автопогоня · двигайся сам, чтобы взять управление':'🤖 Автопогоня за беглецом · нажми WASD, чтобы управлять самому');X.fillStyle='rgba(0,0,0,.65)';X.fillRect(VW/2-X.measureText(tx).width/2-8,VH-46,X.measureText(tx).width+16,22);X.fillStyle='#8fb4ff';X.fillText(tx,VW/2,VH-30);X.restore()}
 drawBn();
 $('hr').textContent=m.st==='c'?(m.lost?'💀 Проиграл (полиция)':'🚔 ПОЛИЦЕЙСКИЙ'):m.st==='o'?'✅ Сбежал':(m.rv?'🏃 Беглец (2-й шанс)':'🏃 Беглец');$('hr').style.color=m.st==='c'?'#4d7bff':COLS[S.idx%8];
 $('hq').textContent=m.st==='c'&&!m.lost?`🎯 Поймать: ${S.cg.size}/${S.cneed} · ♻ шанс 1 из 1`:m.st==='c'?'♻ шанс использован':m.rv&&m.st==='r'?'♻ возрождение использовано':'♻ шанс: 1'
