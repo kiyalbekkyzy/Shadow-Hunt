@@ -88,11 +88,12 @@ function endRound(){S.mode='end';const m=S.me;m.g=null;
 const rows=[{pid:S.pid,n:m.n,i:S.idx,s:m.st,cn:m.cn||0,e:m.e,cb:m.cb,d:m.du,me:1},...S.oth.filter(p=>S.ros.includes(p.peer)&&p.presence.ph==='p').map(p=>({pid:p.peer,n:p.presence.n,i:S.ros.indexOf(p.peer),s:p.presence.s,cn:p.presence.cn||0,e:p.presence.e,cb:p.presence.cb,d:p.presence.d}))];
 rows.forEach(r=>r.ct=rows.filter(x=>x.cb===r.pid).length);
 const win=rows.filter(r=>r.s==='o').sort((a,b)=>a.e-b.e),lose=rows.filter(r=>r.s!=='o').sort((a,b)=>b.ct-a.ct),me=rows[0],won=me.s==='o',med=['🥇','🥈','🥉'];
-const card=(r,k,w)=>`<div class="row ${r.me?'me':''}" style="border-color:${COLS[r.i%8]}"><span><span class="dot" style="background:${COLS[r.i%8]}${r.d?`;box-shadow:7px 0 0 ${COLS[(r.i+4)%8]}`:''}"></span><b>${w?med[k]||'🏁':'🚔'} ${esc(r.n)}${r.me?' (ты)':''}</b></span><span>${w?`сбежал за ${r.e} c`:`поймал: ${r.ct}`} · 🪙 ${r.cn}${r.d?' · ⭐ двойной ключ':''}</span></div>`;
-OV.className='';OV.innerHTML=`<div class="end"><h1 style="color:${won?'#7dff6b':'#ff5d6c'}">${won?'🏆 ПОБЕДА!':win.length?'💀 ТЫ ПРОИГРАЛ':'🚔 ПОЛИЦИЯ ПОБЕДИЛА'}</h1><p>${won?'Ты выбрался из тьмы!':me.s==='c'?'Тебя поймали'+(me.ct?', но ты успел поймать друзей: '+me.ct:''):''}</p>${win.length?'<h3>СБЕЖАЛИ</h3>'+win.map((r,k)=>card(r,k,1)).join(''):'<h3>НИКТО НЕ ВЫБРАЛСЯ</h3>'}${lose.length?'<h3>ПОЛИЦИЯ</h3>'+lose.map((r,k)=>card(r,k,0)).join(''):''}<p id="rt" style="opacity:.8">Возврат в главное меню через 15 c</p><button onclick="location.reload()">🏠 В главное меню</button></div>`;S.rt=15;clearInterval(S.rti);S.rti=setInterval(()=>{S.rt--;const e=$('rt');if(e)e.textContent='Возврат в главное меню через '+S.rt+' c';if(S.rt<=0){clearInterval(S.rti);location.reload()}},1000);beep(won?800:150,.4);if(won)setTimeout(()=>beep(1100,.3),200)}
+const card=(r,k,w)=>`<div class="row ${r.me?'me':''}" style="border-color:${COLS[r.i%8]}"><span><span class="dot" style="background:${COLS[r.i%8]}${r.d?`;box-shadow:7px 0 0 ${COLS[(r.i+4)%8]}`:''}"></span><b>${w?med[k]||'🏁':r.s==='j'?'⛓':'🚔'} ${esc(r.n)}${r.me?' (ты)':''}</b></span><span>${w?`сбежал за ${r.e} c`:`${r.s==='j'?'в тюрьме':'полицейский'} · поймал: ${r.ct}`} · 🪙 ${r.cn}${r.d?' · ⭐ двойной ключ':''}</span></div>`;
+OV.className='';OV.innerHTML=`<div class="end"><h1 style="color:${won?'#7dff6b':'#ff5d6c'}">${won?'🏆 ПОБЕДА!':win.length?'💀 ТЫ ПРОИГРАЛ':'🚔 ПОЛИЦИЯ ПОБЕДИЛА'}</h1><p>${won?'Ты выбрался из тьмы!':me.s==='j'?'Ты попался второй раз и просидел в тюрьме до конца раунда'+(me.ct?' · поймал друзей: '+me.ct:''):me.s==='c'?'Ты остался полицейским'+(me.ct?' · поймал друзей: '+me.ct:''):''}</p>${win.length?'<h3>СБЕЖАЛИ</h3>'+win.map((r,k)=>card(r,k,1)).join(''):'<h3>НИКТО НЕ ВЫБРАЛСЯ</h3>'}${lose.length?'<h3>ТЮРЬМА / ПОЛИЦИЯ</h3>'+lose.map((r,k)=>card(r,k,0)).join(''):''}<p id="rt" style="opacity:.8">Возврат в главное меню через 15 c</p><button onclick="location.reload()">🏠 В главное меню</button></div>`;S.rt=15;clearInterval(S.rti);S.rti=setInterval(()=>{S.rt--;const e=$('rt');if(e)e.textContent='Возврат в главное меню через '+S.rt+' c';if(S.rt<=0){clearInterval(S.rti);location.reload()}},1000);beep(won?800:150,.4);if(won)setTimeout(()=>beep(1100,.3),200)}
 // input
-addEventListener('keydown',e=>{const c=e.code;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(c)&&S.mode==='play')e.preventDefault();if(e.repeat)return;keys[c]=1;
+addEventListener('keydown',e=>{const c=e.code;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','Tab'].includes(c)&&S.mode==='play')e.preventDefault();if(e.repeat)return;keys[c]=1;
 if(c==='KeyM'&&document.activeElement.tagName!=='INPUT'){snd=!snd;try{localStorage.setItem('sh_snd',snd?'1':'0')}catch(e){}say(snd?'Звук: вкл':'Звук: выкл')}
+if(S.mode==='play'&&specOn()){if(c==='Digit1'||c==='Numpad1')S.vf=0;else if(c==='Digit2'||c==='Numpad2')S.vf=1;else if(c==='Tab')S.vf=1-(S.vf==null?S.me.f:S.vf)}
 if(S.mode!=='play')return;if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyQ','Space'].includes(c)&&skipBn())return;if(c==='KeyE')interact();if(c==='KeyQ')throwToy()});
 addEventListener('keyup',e=>{keys[e.code]=0});
 
@@ -104,7 +105,8 @@ const joy={on:0,id:null,x:0,y:0,mag:0,ox:0,oy:0},JR=56;
 const ST_=$('stage'),JB=$('jb'),JK=$('jk');
 function joyOff(){joy.on=0;joy.id=null;joy.x=joy.y=joy.mag=0;JB.classList.remove('on');JB.style.left=JB.style.top='';JK.style.transform='translate(0,0)'}
 function joyMove(e){const dx=e.clientX-joy.ox,dy=e.clientY-joy.oy,d=hyp(dx,dy),k=d>JR?JR/d:1;JK.style.transform=`translate(${dx*k}px,${dy*k}px)`;const mg=Math.min(1,d/JR);if(mg<.18){joy.x=joy.y=joy.mag=0}else{joy.x=dx/d;joy.y=dy/d;joy.mag=mg}}
-ST_.addEventListener('pointerdown',e=>{if(S.mode==='play')skipBn();if(!mobile()||S.mode!=='play'||joy.on||e.target.closest('.tbtn'))return;e.preventDefault();try{ST_.setPointerCapture(e.pointerId)}catch(_){}
+ST_.addEventListener('pointerdown',e=>{if(S.mode==='play'&&specOn()&&S.sb){const r=C.getBoundingClientRect(),px=(e.clientX-r.left)*VW/r.width,py=(e.clientY-r.top)*VH/r.height;S.sb.forEach((b,i)=>{if(px>=b.x&&px<=b.x+b.w&&py>=b.y&&py<=b.y+b.h)S.vf=i})}
+if(S.mode==='play')skipBn();if(!mobile()||S.mode!=='play'||joy.on||e.target.closest('.tbtn'))return;e.preventDefault();try{ST_.setPointerCapture(e.pointerId)}catch(_){}
 const r=ST_.getBoundingClientRect();joy.on=1;joy.id=e.pointerId;joy.ox=e.clientX;joy.oy=e.clientY;JB.style.left=(e.clientX-r.left)+'px';JB.style.top=(e.clientY-r.top)+'px';JB.classList.add('on');joyMove(e)});
 ST_.addEventListener('pointermove',e=>{if(joy.on&&e.pointerId===joy.id){e.preventDefault();joyMove(e)}});
 ['pointerup','pointercancel','lostpointercapture'].forEach(n=>ST_.addEventListener(n,e=>{if(e.pointerId===joy.id)joyOff()}));
@@ -113,16 +115,16 @@ pressBtn('be',()=>{if(S.mode==='play')interact()});
 pressBtn('bq',()=>{if(S.mode==='play')throwToy()});
 pressBtn('bm',()=>{snd=!snd;try{localStorage.setItem('sh_snd',snd?'1':'0')}catch(e){}$('bm').textContent=snd?'🔊':'🔇';say(snd?'Звук: вкл':'Звук: выкл')});
 $('bm').textContent=snd?'🔊':'🔇';
-function tui(m){$('bq').classList.toggle('off',!m.toy||m.st!=='r'||!!m.hid);$('be').classList.toggle('off',m.st!=='r');$('be').classList.toggle('hd',!!m.hid)}
+function tui(m){$('bq').classList.toggle('off',!m.toy||m.st!=='r'||!!m.hid);{const sp=m.st==='o'||m.st==='j';$('be').classList.toggle('off',m.st!=='r'&&!sp);$('be').querySelector('i').textContent=sp?'этаж':'действие'}$('be').classList.toggle('hd',!!m.hid)}
 function fit(){const st=$('stage');if(!mobile()){VW=960;VH=640}else{const w=st.clientWidth||innerWidth,h=st.clientHeight||innerHeight,a=w/h;
 if(a>=1.5){VW=960;VH=cl(Math.round(960/a),360,640)}else{VW=cl(Math.round(640*a),360,960);VH=cl(Math.round(VW/a),360,960)}}
 if(C.width!==VW||C.height!==VH){C.width=VW;C.height=VH;dk.width=VW;dk.height=VH}}
 const FL=()=>S.fl[S.me.f];
 const ro=p=>{const q=p.presence,o=S.o[p.peer]||(S.o[p.peer]={x:q.x,y:q.y});return o};
 function hunters(f){return S.gd.filter(g=>g.f===f).concat(S.oth.filter(p=>p.presence.ph==='p'&&p.presence.s==='c'&&p.presence.f===f).map(p=>{const o=ro(p);return{x:o.x,y:o.y,peer:p.peer}}))}
-function interact(){const m=S.me,L=FL();if(S.bn){skipBn();return}if(m.st!=='r')return;
+function interact(){const m=S.me,L=FL();if(S.bn){skipBn();return}if(specOn()){S.vf=1-(S.vf==null?m.f:S.vf);beep(420,.08);return}if(m.st!=='r')return;
 if(m.slip>0)return;if(m.hid){leaveCover(0);return}
-const dc=m.du?8:S.idx,d=L.doors.find(d=>d.c===dc);if(d&&hyp(m.x-(d.x+35),m.y-10)<70){if(m.cn>=S.NEED&&m.k&&(!m.du||m.k2)){m.st='o';m.e=Math.round(S.t);m.hidden=1;say('Ты сбежал! Следи за друзьями');beep(900,.3);return}say(`Нужно ${S.NEED} монет и ${m.du?'2 ключа':'свой ключ'} (${m.cn}/${S.NEED}, ключей ${(m.k?1:0)+(m.k2?1:0)}/${m.du?2:1})`);beep(150,.15);return}
+const dc=m.du?8:S.idx,d=L.doors.find(d=>d.c===dc);if(d&&hyp(m.x-(d.x+35),m.y-10)<70){if(m.cn>=S.NEED&&m.k&&(!m.du||m.k2)){m.st='o';m.e=Math.round(S.t);m.hidden=1;S.vf=m.f;banner('🏆 ТЫ ВЫБРАЛСЯ!','Ты победил! Теперь ты наблюдаешь за игрой сверху.\nРаунд закончится, когда доиграют все.','#7dff6b',0,0,3,'Режим наблюдателя через');beep(900,.3);return}say(`Нужно ${S.NEED} монет и ${m.du?'2 ключа':'свой ключ'} (${m.cn}/${S.NEED}, ключей ${(m.k?1:0)+(m.k2?1:0)}/${m.du?2:1})`);beep(150,.15);return}
 const od=L.doors.find(d=>d.c===S.idx);if(m.du&&od&&hyp(m.x-(od.x+35),m.y-10)<70){say('Ты двухцветный — нужна двойная дверь на 1 этаже');return}
 let bc=null,bd=55;for(const c of L.covers){const dx=Math.max(c.x-m.x,0,m.x-c.x-c.w),dy=Math.max(c.y-m.y,0,m.y-c.y-c.h),dd=hyp(dx,dy);if(dd<bd){bd=dd;bc=c}}
 if(!bc)return;if(m.hcd>0){say('Подожди '+Math.ceil(m.hcd)+' c — укрытие ещё нельзя занять');return}
@@ -151,16 +153,18 @@ else if(g.st==='INVESTIGATE'){if(hyp(g.x-g.tgt.x,g.y-g.tgt.y)>14)follow(g,L,g.tg
 else if(g.st==='RETURN'){follow(g,L,pt,90,dt);if(hyp(g.x-pt.x,g.y-pt.y)<14)g.st='PATROL'}
 else{if(g.wait>0)g.wait-=dt;else{follow(g,L,pt,82,dt);if(hyp(g.x-pt.x,g.y-pt.y)<14){g.pi=(g.pi+1)%5;g.wait=.6;g.path=null}}}}
 function becomeCop(by){const m=S.me;m.cb=by||'bot';m.st='c';m.hid=null;m.hidden=0;m.toy=0;m.k=0;m.du=0;m.k2=0;m.slip=0;m.boost=0;
-if(m.rv){m.lost=1;banner('💀 ТЕБЯ ПОЙМАЛИ СНОВА','Второй шанс уже использован — ты ПРОИГРАЛ.\nТеперь ты полицейский до конца раунда.','#ff3050',2)}
-else banner('🚔 ТЕБЯ ПОЙМАЛИ!','Теперь ты ПОЛИЦЕЙСКИЙ. Поймай '+S.cneed+' '+(S.cneed>1?'беглецов':'беглеца')+' — и снова станешь беглецом!\nВернувшись, найди ключ и дверь. Но второй раз поймают — проиграешь.','#4d7bff',2);
+if(m.rv){jail('caught');return}
+banner('🚔 ТЕБЯ ПОЙМАЛИ!','Теперь ты ПОЛИЦЕЙСКИЙ. Поймай '+S.cneed+' '+(S.cneed>1?'беглецов':'беглеца')+' — и снова станешь беглецом!\nВернувшись, найди ключ и дверь. Но второй раз поймают — проиграешь.','#4d7bff',2);
 beep(120,.5,'sawtooth',.08)}
 function revive(){const m=S.me;if(m.rv)return;m.st='r';m.rv=1;m.inv=1.5;m.boost=3;S.alert=1;m.hidden=0;m.hid=null;m.k=0;m.k2=0;m.du=0;
 banner('🏃 ТЫ СНОВА БЕГЛЕЦ!','Найди свой ключ и свою дверь — и выбирайся!\nЕсли поймают ещё раз — ПРОИГРЫШ. Полицейские услышат твоё возвращение и бросятся за тобой!','#7dff6b',2);beep(900,.3);setTimeout(()=>beep(1200,.3),200)}
-function banner(t,s,c,d,sp){S.bn={t:15,d:15,title:t,sub:s,col:c,sp:sp?1:0,go:null}}// плашка висит, пока игрок не начнёт ходить; через 1 с после этого игра для него начинается (15 с — страховка)
+function jail(why){const m=S.me;m.st='j';m.lost=1;m.jx=m.x;m.jy=m.y;m.hid=null;m.hidden=0;m.toy=0;m.k=0;m.du=0;m.k2=0;m.slip=0;m.boost=0;S.vf=m.f;
+banner('⛓ ТЫ В ТЮРЬМЕ',why==='nor'?'Беглецов не осталось — возродиться не получится.\nТы остаёшься за решёткой до конца раунда и можешь только наблюдать сверху.':'Тебя поймали второй раз — шанса больше нет.\nТы посажен на месте поимки до конца раунда и можешь только наблюдать за игрой сверху.','#ff3050',0,0,4,'Режим наблюдателя через');beep(100,.6,'sawtooth',.09)}
+function banner(t,s,c,d,sp,go,lab){S.bn={t:15,d:15,title:t,sub:s,col:c,sp:sp?1:0,go:go==null?null:go,lab:lab||''}}// плашка висит, пока игрок не начнёт ходить; через 1 с после этого игра для него начинается (15 с — страховка)
 const allMask=k=>{let v=S.me[k]||0;S.oth.forEach(p=>{if(p.presence.ph==='p')v|=p.presence[k]||0});return v};
 function update(dt){const m=S.me,L=FL(),pz=!!(S.bn&&S.bn.sp);if(!pz)S.t+=dt;const fo=flashOn();if(fo&&!S.fo){beep(520,.35,'sine',.07);say('💡 Вспышка света! Видно всё вокруг')}S.fo=fo;const run=m.st==='r',cop=m.st==='c',frozen=!!S.bn,inp=!!(keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight||(joy.on&&joy.mag));if(inp||frozen)S.lastIn=performance.now();if(inp&&S.bn&&S.bn.go==null)S.bn.go=1;
 // пока на экране плашка: для этого игрока пауза, он «призрак» — невидим и неуязвим, остальные играют дальше
-if(frozen)m.hidden=1;else if(S.wasFz&&m.st!=='o'){m.hidden=m.hid?1:0;if(S.alert&&m.st==='r'){S.alert=0;m.sd++;m.sx=m.x;m.sy=m.y;m.sf=m.f;sndEvent(S.pid,m.sd,m.x,m.y,m.f);say('🔔 Полицейские услышали твоё возвращение — бегут к тебе!',3)}}S.wasFz=frozen;
+if(frozen&&m.st!=='j')m.hidden=1;else if(S.wasFz&&m.st!=='o'){m.hidden=m.hid?1:0;if(S.alert&&m.st==='r'){S.alert=0;m.sd++;m.sx=m.x;m.sy=m.y;m.sf=m.f;sndEvent(S.pid,m.sd,m.x,m.y,m.f);say('🔔 Полицейские услышали твоё возвращение — бегут к тебе!',3)}}S.wasFz=frozen;
 if((run||cop)&&!frozen){let dx=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),dy=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
 if(joy.on&&joy.mag){dx=joy.x;dy=joy.y}if(m.slip>0){m.slip-=dt;const k=Math.max(0,m.slip)/2.5;move(L,m,m.pf.x*120*k*dt,m.pf.y*120*k*dt,9);m.phs+=dt*2}else if(!m.hid&&(dx||dy)){const d=hyp(dx,dy);dx/=d;dy/=d;m.pf={x:dx,y:dy};const sp=(cop?150:135)*(m.boost>0?1.7:1)*(joy.on&&joy.mag?Math.max(.6,joy.mag):1);move(L,m,dx*sp*dt,dy*sp*dt,9);m.phs+=dt*12}
 const inSt=ST.some(s=>m.x>s.x&&m.x<s.x+s.w&&m.y>s.y&&m.y<s.y+s.h);if(inSt&&!S.onSt&&!m.hid){m.f=1-m.f;beep(420,.1);say(m.f?'Второй этаж':'Первый этаж')}S.onSt=inSt}
@@ -190,11 +194,13 @@ else{m.g=null;const hp=S.ros.map(r=>S.oth.find(p=>p.peer===r&&p.presence.g&&p.pr
 if(hp)hp.presence.g.forEach((v,i)=>{const g=S.gs[i];if(!g)return;g.x=v[0];g.y=v[1];g.a=v[2]/10;g.st=['PATROL','CHASE','INVESTIGATE'][v[3]]})}
 S.gd.forEach((d,i)=>{const g=S.gs[i],a=Math.min(1,dt*14);d.x+=(g.x-d.x)*a;d.y+=(g.y-d.y)*a;d.a=g.a;d.st=g.st;d.alert=g.alert;d.ph=(d.ph||0)+dt*6});
 if(run&&!frozen&&!m.hidden&&!(m.inv>0)){const hh=hunters(m.f).find(h=>hyp(h.x-m.x,h.y-m.y)<20);if(hh)becomeCop(hh.peer)}
-if(cop&&!m.rv)S.oth.forEach(p=>{const q=p.presence;if(q.ph==='p'&&q.s==='c'&&q.cb===S.pid&&S.ros.includes(p.peer)&&!S.cg.has(p.peer)){S.cg.add(p.peer);say(`Ты поймал: ${q.n} (${S.cg.size}/${S.cneed})`,3);beep(500,.2)}});
+if(cop&&!m.rv)S.oth.forEach(p=>{const q=p.presence;if(q.ph==='p'&&(q.s==='c'||q.s==='j')&&q.cb===S.pid&&S.ros.includes(p.peer)&&!S.cg.has(p.peer)){S.cg.add(p.peer);say(`Ты поймал: ${q.n} (${S.cg.size}/${S.cneed})`,3);beep(500,.2)}});
 if(cop&&!m.rv&&!m.lost&&S.cg.size>=S.cneed)revive();
 if(S.bn){S.bn.t-=dt;if(S.bn.go!=null)S.bn.go-=dt;if(S.bn.t<=0||(S.bn.go!=null&&S.bn.go<=0))S.bn=null}
 const rr=S.oth.filter(p=>p.presence.ph==='p'&&S.ros.includes(p.peer));
-S.nr=(m.st!=='r'&&!rr.some(p=>p.presence.s==='r'))?(S.nr||0)+dt:0;if(S.t>3&&S.nr>3)endRound();
+const anyRun=m.st==='r'||rr.some(p=>p.presence.s==='r'),fin=s=>s==='o'||s==='j';
+S.nr=anyRun?0:(S.nr||0)+dt;if(S.t>3&&S.nr>3&&m.st==='c')jail('nor');
+S.nf=(fin(m.st)&&rr.every(p=>fin(p.presence.s)))?(S.nf||0)+dt:0;if(S.t>3&&S.nf>1.5)endRound();
 S.parts.forEach(q=>{q.x+=q.vx*dt;q.y+=q.vy*dt;q.t-=dt});S.parts=S.parts.filter(q=>q.t>0);S.texts.forEach(q=>{q.y-=30*dt;q.t-=dt});S.texts=S.texts.filter(q=>q.t>0);
 S.fx.forEach(f=>f.t+=dt);S.fx=S.fx.filter(f=>f.t<1.2);if(S.msgT>0)S.msgT-=dt}
 // drawing
@@ -209,7 +215,57 @@ function objective(){const m=S.me;if(m.st!=='r')return null;const kf=(S.idx+1)%2
 if(!m.k)w={f:kf,p:S.fl[kf].keys.find(k=>k.c===S.idx)};else if(m.du&&!m.k2)w={f:1,p:S.fl[1].k2};
 else{const df=m.du?0:S.idx%2,d=S.fl[df].doors.find(d=>d.c===(m.du?8:S.idx));w={f:df,p:d?{x:d.x+35,y:30}:null}}
 if(!w||!w.p)return null;if(w.f===m.f)return w.p;return ST.map(s=>({x:s.x+s.w/2,y:s.y+s.h/2})).sort((a,b)=>hyp(a.x-m.x,a.y-m.y)-hyp(b.x-m.x,b.y-m.y))[0]}
+
+// ---- режим наблюдателя (победил или в тюрьме): вид сверху на весь лабиринт ----
+const specOn=()=>!!(S.fl&&S.me&&S.mode==='play'&&(S.me.st==='o'||S.me.st==='j'));
+function bars(x,y){X.save();X.fillStyle='rgba(10,12,18,.35)';X.fillRect(x-20,y-24,40,40);X.strokeStyle='#9aa3b5';X.lineWidth=3;for(let i=-16;i<=16;i+=8){X.beginPath();X.moveTo(x+i,y-24);X.lineTo(x+i,y+16);X.stroke()}X.lineWidth=4;X.strokeStyle='#5d6678';X.strokeRect(x-20,y-24,40,40);X.restore()}
+function drawBn(){
+// большой баннер роли (текст переносится по ширине, рамка считается по реальной высоте)
+if(S.bn){const b=S.bn,al=Math.min(1,b.t,(b.d-b.t)*3+.2)*(b.go==null?1:Math.max(0,Math.min(1,b.go*2))),u=cl(VW/(C.clientWidth||VW),1,2.2),pd=Math.round(12*u),mw=VW-2*pd-12;
+const wrap=(txt,font)=>{X.font=font;const out=[];String(txt).split('\n').forEach(par=>{let cur='';par.split(' ').forEach(w2=>{const tt=cur?cur+' '+w2:w2;if(cur&&X.measureText(tt).width>mw){out.push(cur);cur=w2}else cur=tt});out.push(cur)});return out};
+const fs=Math.round(cl(VW/12,18,34)*Math.min(u,1.4)),sf=Math.round(cl(VW/34,12,16)*Math.min(u,1.5));
+const tl=wrap(b.title,`bold ${fs}px "Courier New"`),sl=wrap(b.sub+(b.go!=null?'\n'+(b.lab||'▶ Начинаем через')+' '+Math.max(1,Math.ceil(b.go))+' c…':b.sp?'\n⏸ ВСЯ ИГРА НА ПАУЗЕ. Начни ходить — и через 1 секунду игра начнётся':'\n⏸ Для тебя пауза: ты невидим, остальные играют. Начни ходить — через 1 секунду вернёшься в игру'),`bold ${sf}px "Courier New"`);
+const th=tl.length*(fs+6),sh=sl.length*(sf+6),bh=pd*2+th+sh+10,by=Math.max(4,Math.round(VH/2-bh/2-20));
+X.save();X.globalAlpha=al;X.fillStyle='rgba(2,6,14,.88)';X.fillRect(6,by,VW-12,bh);X.fillStyle=b.col;X.fillRect(6,by,VW-12,4);X.fillRect(6,by+bh-4,VW-12,4);X.textAlign='center';
+let yy=by+pd+fs;X.font=`bold ${fs}px "Courier New"`;X.shadowColor=b.col;X.shadowBlur=14;X.fillStyle=b.col;tl.forEach(l=>{X.fillText(l,VW/2,yy);yy+=fs+6});X.shadowBlur=0;
+yy+=10-6+sf-fs+6-6;X.font=`bold ${sf}px "Courier New"`;X.fillStyle='#fff';yy=by+pd+th+10+sf;sl.forEach(l=>{X.fillText(l,VW/2,yy);yy+=sf+6});X.restore()}
+}
+function renderSpec(){const m=S.me,t=performance.now()/1000,f=S.vf==null?m.f:S.vf;S.vf=f;const L=S.fl[f],u=cl(VW/(C.clientWidth||VW),1,2.2),fs=Math.round(12*u),top=Math.round(34*u),bot=Math.round(26*u)*2+8;
+const sc=Math.min(VW/WW,(VH-top-bot)/WH),ox=(VW-WW*sc)/2,oy=top+((VH-top-bot)-WH*sc)/2,won=m.st==='o';
+X.fillStyle='#050a12';X.fillRect(0,0,VW,VH);X.save();X.translate(ox,oy);X.scale(sc,sc);X.drawImage(FI[f],0,0);
+L.rags.forEach(r=>{X.save();X.translate(r.x+16,r.y+11);X.rotate(r.a);X.fillStyle='#d9d0b4';X.beginPath();X.ellipse(0,0,17,11,0,0,7);X.fill();X.restore()});
+L.holes.forEach(h=>{X.fillStyle='#05070c';X.fillRect(h.x,h.y,h.w,h.h);X.strokeStyle='#ffd21f';X.lineWidth=3;X.strokeRect(h.x,h.y,h.w,h.h);X.beginPath();X.moveTo(h.x,h.y);X.lineTo(h.x+h.w,h.y+h.h);X.moveTo(h.x+h.w,h.y);X.lineTo(h.x,h.y+h.h);X.stroke()});
+for(const w of L.solids){if(w.door){X.fillStyle='#4a3416';X.fillRect(w.x,w.y,w.w,w.h);X.fillStyle=w.c===8?'#eee':COLS[w.c];X.fillRect(w.x+4,w.y+4,w.w-8,w.h-8)}
+else if(w.t==='w'){X.fillStyle='#2b5a5e';X.fillRect(w.x,w.y,w.w,w.h);X.fillStyle='#3d7a7e';X.fillRect(w.x,w.y,w.w,4)}
+else if(w.t==='b'){X.fillStyle='#8a6a3c';X.fillRect(w.x,w.y,w.w,w.h);X.fillStyle='#a8844c';X.fillRect(w.x,w.y,w.w,5)}
+else{X.fillStyle=f?'#2c3566':'#1d3a52';X.fillRect(w.x,w.y,w.w,w.h);X.fillStyle=f?'#5560a8':'#3b6f99';X.fillRect(w.x,w.y,w.w,3)}}
+L.sd.forEach(d=>{const op=dOpen(d);if(!op){X.fillStyle='#8c93a6';X.fillRect(d.x,d.y,d.w,d.h)}else{X.strokeStyle='rgba(120,255,160,.6)';X.lineWidth=2;X.strokeRect(d.x+1,d.y+1,d.w-2,d.h-2)}X.fillStyle=op?'#4dff88':'#ff3a4a';X.beginPath();X.arc(d.x+d.w/2,d.y+d.h/2,4,0,7);X.fill()});
+const cm=allMask('m'),tk=allMask('tm');
+L.coins.forEach((c,i)=>{if(cm>>(f*15+i)&1)return;X.fillStyle='#ffc83d';X.beginPath();X.arc(c.x,c.y,7,0,7);X.fill()});
+L.toys.forEach((c,i)=>{if(tk>>(f*2+i)&1)return;X.fillStyle='#ff6fb5';X.fillRect(c.x-7,c.y-6,14,13)});
+L.clk.forEach((c,i)=>{if(tk>>(12+f*2+i)&1)return;X.fillStyle='#7dffea';X.beginPath();X.arc(c.x,c.y,9,0,7);X.fill()});
+L.keys.forEach(k=>{X.fillStyle=COLS[k.c%8];X.strokeStyle='#fff';X.lineWidth=1.5;X.beginPath();X.arc(k.x-4,k.y,6,0,7);X.fill();X.stroke();X.fillRect(k.x,k.y-2,12,4)});
+if(L.dual&&!(tk>>10&1)){X.fillStyle='#fff';X.beginPath();X.arc(L.dual.x,L.dual.y,9,0,7);X.fill()}
+S.gd.filter(g=>g.f===f).forEach(g=>guard(g));
+const ps=[{i:S.idx,n:m.n,s:m.st,x:m.x,y:m.y,f:m.f,me:1,d:m.du},...S.oth.filter(p=>p.presence.ph==='p'&&S.ros.includes(p.peer)).map(p=>{const q=p.presence,o=ro(p);return{i:S.ros.indexOf(p.peer),n:q.n||'?',s:q.s,x:o.x,y:o.y,f:q.f,d:q.d}})];
+const lbl=Math.round(fs*.95/sc);
+ps.filter(p=>p.f===f&&p.s!=='o').sort((a,b)=>a.y-b.y).forEach(p=>{if(p.me){X.strokeStyle='#fff';X.lineWidth=2/sc*1.2;X.beginPath();X.arc(p.x,p.y,22,0,7);X.stroke()}
+person(p.x,p.y,t*8,COLS[p.i%8],p.s==='c',0,t,p.d?COLS[(p.i+4)%8]:null,0);if(p.s==='j')bars(p.x,p.y);
+X.font=`bold ${lbl}px "Courier New"`;X.textAlign='center';X.lineWidth=3/sc;X.strokeStyle='#000';X.fillStyle=COLS[p.i%8];const tx=(p.s==='c'?'🚔 ':p.s==='j'?'⛓ ':'')+p.n+(p.me?' (ты)':'');X.strokeText(tx,p.x,p.y-30);X.fillText(tx,p.x,p.y-30)});
+X.restore();
+const rc=won?'#7dff6b':'#ff3050';X.save();X.lineWidth=6;X.strokeStyle=rc;X.globalAlpha=.5;X.strokeRect(3,3,VW-6,VH-6);X.restore();
+X.fillStyle='rgba(0,0,0,.7)';X.fillRect(0,0,VW,top);X.textAlign='left';X.font=`bold ${Math.round(fs*1.05)}px "Courier New"`;X.fillStyle=rc;
+X.fillText(mobile()?(won?'🏆 ПОБЕДА · 👁':'⛓ ТЮРЬМА · 👁'):(won?'🏆 ТЫ ВЫБРАЛСЯ · 👁 НАБЛЮДЕНИЕ ЗА ИГРОЙ':'⛓ ТЫ В ТЮРЬМЕ · 👁 НАБЛЮДЕНИЕ ЗА ИГРОЙ'),10,Math.round(top*.64));
+const bw=Math.round(70*u),re=VW-(mobile()?Math.round(54*u):8);S.sb=[0,1].map(i=>({x:re-(2-i)*(bw+4)+4,y:4,w:bw,h:top-8}));
+S.sb.forEach((b,i)=>{const n=ps.filter(p=>p.f===i&&p.s!=='o').length;X.fillStyle=f===i?'#ffc83d':'#16384a';X.fillRect(b.x,b.y,b.w,b.h);X.fillStyle=f===i?'#1a1200':'#cfe6ee';X.textAlign='center';X.font=`bold ${fs}px "Courier New"`;X.fillText('Этаж '+(i+1)+' ('+n+')',b.x+b.w/2,b.y+b.h*.68)});
+// легенда
+X.fillStyle='rgba(0,0,0,.7)';X.fillRect(0,VH-bot,VW,bot);X.textAlign='left';X.font=`bold ${fs}px "Courier New"`;let lx=8,ly=VH-bot+Math.round(18*u);
+ps.forEach(p=>{const tx=(p.s==='o'?'✅ ':p.s==='c'?'🚔 ':p.s==='j'?'⛓ ':'🏃 ')+p.n,wd=X.measureText(tx).width+24;if(lx+wd>VW-6){lx=8;ly+=Math.round(18*u)}X.fillStyle=COLS[p.i%8];X.beginPath();X.arc(lx+5,ly-4,5,0,7);X.fill();X.fillStyle='#cfe6ee';X.fillText(tx,lx+14,ly);lx+=wd+8});
+X.fillStyle='#8fd0c0';X.textAlign='right';X.fillText(mobile()?'Нажми на этаж сверху':'Этаж: клавиши 1 / 2 / Tab',VW-8,VH-6);
+$('hr').textContent=won?'✅ Сбежал (наблюдаешь)':'⛓ В тюрьме (наблюдаешь)';$('hr').style.color=rc;$('hq').textContent='';$('hf').textContent=f+1;$('hn').textContent=ps.filter(p=>p.s==='r').length;
+drawBn()}
 function render(){if(!S.fl){X.fillStyle='#050a12';X.fillRect(0,0,VW,VH);return}
+if(specOn()){renderSpec();tui(S.me);return}
 const fo=flashOn(),m=S.me,L=FL(),t=performance.now()/1000,cx=cl(m.x-VW/2,0,WW-VW),cy=cl(m.y-VH/2,0,WH-VH),zs=1,tx=0,ty=0;
 X.fillStyle='#050a12';X.fillRect(0,0,VW,VH);X.save();X.translate(tx,ty);X.scale(zs,zs);X.translate(-cx,-cy);X.drawImage(FI[m.f],0,0);
 if(S.shake>0)X.translate((Math.random()-.5)*8*S.shake,(Math.random()-.5)*8*S.shake);
@@ -233,7 +289,7 @@ const key=L.keys.find(k=>k.c===S.idx&&!m.k);if(key){const kb=Math.sin(t*4)*2;X.s
 if(L.dual&&!(tk>>10&1)){X.fillStyle='#fff';X.beginPath();X.arc(L.dual.x,L.dual.y,9,0,7);X.fill();X.fillStyle=COLS[Math.floor(t*3)%8];X.fillRect(L.dual.x-9,L.dual.y-3,18,6)}
 const key2=L.k2&&m.du&&!m.k2?L.k2:null;if(key2){X.fillStyle='#fff';X.beginPath();X.arc(key2.x-4,key2.y,6,0,7);X.fill();X.fillRect(key2.x,key2.y-2,12,4);X.fillRect(key2.x+8,key2.y,3,6)}
 const ents=[];S.gd.filter(g=>g.f===m.f).forEach(g=>ents.push({y:g.y,d:()=>guard(g)}));
-S.oth.forEach(p=>{const q=p.presence;if(q.ph!=='p'||q.f!==m.f||q.s==='o'||q.h)return;const o=ro(p),i=S.ros.indexOf(p.peer);ents.push({y:o.y,d:()=>person(o.x,o.y,t*8,COLS[i%8],q.s==='c',0,t,q.d?COLS[(i+4)%8]:null)})});
+S.oth.forEach(p=>{const q=p.presence;if(q.ph!=='p'||q.f!==m.f||q.s==='o'||q.h)return;const o=ro(p),i=S.ros.indexOf(p.peer);ents.push({y:o.y,d:()=>{person(o.x,o.y,q.s==='j'?0:t*8,COLS[i%8],q.s==='c',0,t,q.d?COLS[(i+4)%8]:null);if(q.s==='j')bars(o.x,o.y)}})});
 if(m.st!=='o')ents.push({y:m.y,d:()=>person(m.x,m.y,m.phs,COLS[S.idx%8],m.st==='c',m.hid,t,m.du?COLS[(S.idx+4)%8]:null,m.slip>0)});
 ents.sort((a,b)=>a.y-b.y).forEach(e=>e.d());S.parts.forEach(q=>{X.globalAlpha=q.t*2;X.fillStyle=q.c;X.fillRect(q.x,q.y,3,3)});X.globalAlpha=1;X.restore();
 // darkness
@@ -266,20 +322,12 @@ if(m.slip>0){X.save();X.textAlign='center';X.font='bold 30px "Courier New"';X.fi
 if(m.boost>0){X.save();X.textAlign='center';X.font='bold 18px "Courier New"';X.fillStyle='#7dffea';X.fillText('⚡ УСКОРЕНИЕ '+m.boost.toFixed(1),VW/2,VH-60);X.restore()}
 if(m.inv>0&&m.st==='r'){X.save();X.textAlign='center';X.font='bold 16px "Courier New"';X.fillStyle='#7dff6b';X.fillText('🛡 Защита '+m.inv.toFixed(1),VW/2,VH-82);X.restore()}
 if(S.ap&&!S.bn){X.save();X.textAlign='center';X.font='bold 13px "Courier New"';const tx=(mobile()?'🤖 Автопогоня · двигайся сам, чтобы взять управление':'🤖 Автопогоня за беглецом · нажми WASD, чтобы управлять самому');X.fillStyle='rgba(0,0,0,.65)';X.fillRect(VW/2-X.measureText(tx).width/2-8,VH-46,X.measureText(tx).width+16,22);X.fillStyle='#8fb4ff';X.fillText(tx,VW/2,VH-30);X.restore()}
-// большой баннер роли (текст переносится по ширине, рамка считается по реальной высоте)
-if(S.bn){const b=S.bn,al=Math.min(1,b.t,(b.d-b.t)*3+.2)*(b.go==null?1:Math.max(0,Math.min(1,b.go*2))),u=cl(VW/(C.clientWidth||VW),1,2.2),pd=Math.round(12*u),mw=VW-2*pd-12;
-const wrap=(txt,font)=>{X.font=font;const out=[];String(txt).split('\n').forEach(par=>{let cur='';par.split(' ').forEach(w2=>{const tt=cur?cur+' '+w2:w2;if(cur&&X.measureText(tt).width>mw){out.push(cur);cur=w2}else cur=tt});out.push(cur)});return out};
-const fs=Math.round(cl(VW/12,18,34)*Math.min(u,1.4)),sf=Math.round(cl(VW/34,12,16)*Math.min(u,1.5));
-const tl=wrap(b.title,`bold ${fs}px "Courier New"`),sl=wrap(b.sub+(b.go!=null?'\n▶ Начинаем через '+Math.max(1,Math.ceil(b.go))+' c…':b.sp?'\n⏸ ВСЯ ИГРА НА ПАУЗЕ. Начни ходить — и через 1 секунду игра начнётся':'\n⏸ Для тебя пауза: ты невидим, остальные играют. Начни ходить — через 1 секунду вернёшься в игру'),`bold ${sf}px "Courier New"`);
-const th=tl.length*(fs+6),sh=sl.length*(sf+6),bh=pd*2+th+sh+10,by=Math.max(4,Math.round(VH/2-bh/2-20));
-X.save();X.globalAlpha=al;X.fillStyle='rgba(2,6,14,.88)';X.fillRect(6,by,VW-12,bh);X.fillStyle=b.col;X.fillRect(6,by,VW-12,4);X.fillRect(6,by+bh-4,VW-12,4);X.textAlign='center';
-let yy=by+pd+fs;X.font=`bold ${fs}px "Courier New"`;X.shadowColor=b.col;X.shadowBlur=14;X.fillStyle=b.col;tl.forEach(l=>{X.fillText(l,VW/2,yy);yy+=fs+6});X.shadowBlur=0;
-yy+=10-6+sf-fs+6-6;X.font=`bold ${sf}px "Courier New"`;X.fillStyle='#fff';yy=by+pd+th+10+sf;sl.forEach(l=>{X.fillText(l,VW/2,yy);yy+=sf+6});X.restore()}
+drawBn();
 $('hr').textContent=m.st==='c'?(m.lost?'💀 Проиграл (полиция)':'🚔 ПОЛИЦЕЙСКИЙ'):m.st==='o'?'✅ Сбежал':(m.rv?'🏃 Беглец (2-й шанс)':'🏃 Беглец');$('hr').style.color=m.st==='c'?'#4d7bff':COLS[S.idx%8];
 $('hq').textContent=m.st==='c'&&!m.lost?`🎯 Поймать: ${S.cg.size}/${S.cneed} · ♻ шанс 1 из 1`:m.st==='c'?'♻ шанс использован':m.rv&&m.st==='r'?'♻ возрождение использовано':'♻ шанс: 1'
 $('hc').textContent=`${m.cn||0}/${S.NEED}`;$('hk').textContent=m.du?`${(m.k?1:0)+(m.k2?1:0)}/2`:(m.k?'есть':'нет');{const kf=(S.idx+1)%2+1,df=m.du?1:S.idx%2+1,nk=!m.k?kf:(m.du&&!m.k2?2:0);$('hg').textContent=m.st!=='r'?'':nk?'(ключ: этаж '+nk+')':'(дверь: этаж '+df+')';$('hg').style.color=COLS[S.idx%8]}$('ht').textContent=m.toy?'есть (Q)':'нет';$('hf').textContent=m.f+1;$('hl').textContent=fo?'сейчас':Math.ceil(15-(S.t%15));
 $('hn').textContent=(m.st==='r'?1:0)+S.oth.filter(p=>p.presence.ph==='p'&&S.ros.includes(p.peer)&&p.presence.s==='r').length;tui(m)}
-function menu(){OV.className='';OV.innerHTML=`<div><h1>SHADOW HUNT</h1><p>Онлайн-кооператив: найди свой ключ, собери монеты и выберись через дверь своего цвета.<br>Пойманные становятся полицейскими и охотятся на друзей.</p><div class="rules"><b>ПРАВИЛА</b><br>🏃 Ты беглец: найди свой ключ, собери монеты, выберись через свою дверь.<br>🚔 Поймал полицейский — ты полицейский. Поймай ~30% игроков (из 10 — троих, вдвоём — одного), и ты СНОВА беглец и можешь добежать до двери.<br>☝ Возродиться можно только ОДИН раз: поймают второй раз — проигрыш.<br>🫥 Прятаться можно только ВНУТРИ шкафа или коробки и не дольше 8 секунд.<br>🕳 Жёлтая лента на 2 этаже — люк, упадёшь на 1 этаж. 🧽 Тряпка — падаешь на 2–3 с. ⚡ Часы — ускорение 3 с. Комнаты с дверями открываются и закрываются по таймеру.</div><p><input id="nm" placeholder="Имя" maxlength="12"></p><p><input id="cd" placeholder="Код комнаты" value="room1" maxlength="20"></p><button onclick="online(false)">Играть онлайн</button><button class="s" onclick="online(true)">Одному</button></div>`}
+function menu(){OV.className='';OV.innerHTML=`<div><h1>SHADOW HUNT</h1><p>Онлайн-кооператив: найди свой ключ, собери монеты и выберись через дверь своего цвета.<br>Пойманные становятся полицейскими и охотятся на друзей.</p><div class="rules"><b>ПРАВИЛА</b><br>🏃 Ты беглец: найди свой ключ, собери монеты, выберись через свою дверь.<br>🚔 Поймал полицейский — ты полицейский. Поймай ~30% игроков (из 10 — троих, вдвоём — одного), и ты СНОВА беглец и можешь добежать до двери.<br>☝ Возродиться можно только ОДИН раз: поймают второй раз — тебя сажают в ТЮРЬМУ на месте поимки до конца раунда. Из тюрьмы (и после побега) ты наблюдаешь за всей картой сверху. Раунд кончается, когда все закончили: победа или тюрьма.<br>🫥 Прятаться можно только ВНУТРИ шкафа или коробки и не дольше 8 секунд.<br>🕳 Жёлтая лента на 2 этаже — люк, упадёшь на 1 этаж. 🧽 Тряпка — падаешь на 2–3 с. ⚡ Часы — ускорение 3 с. Комнаты с дверями открываются и закрываются по таймеру.</div><p><input id="nm" placeholder="Имя" maxlength="12"></p><p><input id="cd" placeholder="Код комнаты" value="room1" maxlength="20"></p><button onclick="online(false)">Играть онлайн</button><button class="s" onclick="online(true)">Одному</button></div>`}
 let last=performance.now();function loop(n){const dt=Math.min(.05,(n-last)/1000);last=n;const pl=S.mode==='play';if(document.body.classList.contains('play')!==pl){document.body.classList.toggle('play',pl);if(!pl)joyOff()}if(pl)update(dt);render();requestAnimationFrame(loop)}
 addEventListener('shadownet',e=>{const s=e.detail&&e.detail.state;
 if(s==='reconnecting')say('⚠ Связь пропала — переподключаюсь…');
